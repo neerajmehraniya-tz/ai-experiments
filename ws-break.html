@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Items &amp; Milestones</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0eeea;
+    --border: #e0ddd8;
+    --border2: #d0cdc8;
+    --text-primary: #1a1916;
+    --text-secondary: #6b6860;
+    --text-muted: #a09d98;
+    --blue: #2355d4;
+    --blue-light: #eef2fc;
+    --blue-mid: #c2d1f5;
+    --orange: #d45c1a;
+    --orange-light: #fef0e8;
+    --green: #1e7a48;
+    --green-light: #e8f5ee;
+    --amber: #a06010;
+    --amber-light: #fdf3e3;
+    --radius-sm: 5px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .page-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ─── TOPBAR ─── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .topbar-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.2px;
+  }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .toggle {
+    width: 36px;
+    height: 20px;
+    background: var(--border);
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle.on { background: var(--blue); }
+  .toggle-dot {
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: left 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle.on .toggle-dot { left: 18px; }
+  .btn {
+    background: transparent;
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    border-radius: var(--radius-md);
+    padding: 7px 14px;
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.15s, box-shadow 0.15s;
+  }
+  .btn:hover { background: var(--blue-light); box-shadow: 0 0 0 3px var(--blue-mid); }
+  .btn:active { transform: scale(0.98); }
+
+  /* ─── COLUMN HEADERS ─── */
+  .col-headers {
+    display: flex;
+    align-items: center;
+    padding: 8px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .col-count { flex: 1; font-size: 12px; color: var(--text-secondary); text-transform: none; font-weight: 500; letter-spacing: 0; }
+  .col-logic { width: 120px; text-align: center; }
+  .col-dur   { width: 85px; text-align: center; }
+  .col-kpi   { width: 55px; text-align: center; }
+  .col-rework{ width: 65px; text-align: center; }
+  .col-review{ width: 65px; text-align: center; }
+  .col-skills{ width: 80px; text-align: center; }
+  .col-menu  { width: 32px; }
+
+  /* ─── LIST ─── */
+  .list-body { padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 4px; }
+
+  /* ─── GROUP ─── */
+  .group { display: flex; flex-direction: column; gap: 3px; }
+
+  /* ─── ITEM ROW ─── */
+  .item-row {
+    display: flex;
+    align-items: stretch;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .item-row:hover { border-color: var(--border2); box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+  .group-bar { width: 5px; background: var(--blue); flex-shrink: 0; }
+  .item-inner {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    padding: 11px 14px;
+    gap: 0;
+  }
+  .item-expand {
+    width: 22px;
+    height: 22px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    margin-right: 8px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .item-expand:hover { background: var(--surface2); color: var(--text-primary); }
+  .item-name { flex: 1; }
+  .item-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 4px;
+  }
+  .badge-easy   { background: var(--green-light); color: var(--green); }
+  .badge-medium { background: var(--amber-light); color: var(--amber); }
+
+  .col-logic-cell { width: 120px; display: flex; justify-content: center; align-items: center; }
+  .logic-badge {
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 3px 9px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-family: 'DM Mono', monospace;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--surface2);
+    white-space: nowrap;
+  }
+  .logic-badge .check { color: var(--green); font-size: 12px; }
+  .logic-depend { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .depend-label { font-size: 10px; color: var(--text-muted); }
+  .depend-name  { font-size: 10px; color: var(--text-secondary); font-weight: 500; }
+
+  .col-dur-cell   { width: 85px; text-align: center; font-size: 12px; color: var(--text-secondary); font-family: 'DM Mono', monospace; }
+  .col-kpi-cell   { width: 55px; text-align: center; font-size: 13px; color: var(--text-secondary); }
+  .col-rework-cell{ width: 65px; text-align: center; font-size: 13px; color: var(--text-secondary); }
+  .col-review-cell{ width: 65px; text-align: center; font-size: 13px; color: var(--text-secondary); }
+  .col-skills-cell{ width: 80px; display: flex; justify-content: center; align-items: center; gap: 4px; }
+  .skill-badge {
+    border: 1.5px solid var(--orange);
+    border-radius: 5px;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--orange);
+    background: var(--orange-light);
+  }
+  .skill-badge.blue { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+  .col-menu-cell { width: 32px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer; font-size: 18px; border-radius: 4px; transition: background 0.15s; }
+  .col-menu-cell:hover { background: var(--surface2); color: var(--text-primary); }
+
+  /* ─── BREAK ROW ─── */
+  .break-row {
+    border: 1.5px dashed var(--blue);
+    border-radius: var(--radius-md);
+    background: var(--blue-light);
+    overflow: visible;
+    animation: slideIn 0.2s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .break-inner { padding: 12px 16px 14px; }
+  .break-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .break-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(35,85,212,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .break-icon svg { width: 14px; height: 14px; stroke: var(--blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .break-title { font-size: 13px; font-weight: 600; color: var(--blue); flex: 1; }
+  .break-remove {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    padding: 0 4px;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .break-remove:hover { background: rgba(180,30,30,0.08); color: #c0392b; }
+  .break-dates { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+  .date-field { display: flex; flex-direction: column; gap: 4px; }
+  .date-label { font-size: 11px; font-weight: 500; color: var(--text-secondary); letter-spacing: 0.3px; text-transform: uppercase; }
+  .date-input {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-primary);
+    cursor: pointer;
+    width: 145px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .date-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-mid); }
+  .date-sep { color: var(--text-muted); font-size: 16px; padding-bottom: 6px; }
+  .break-duration {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--blue);
+    background: var(--blue-mid);
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-family: 'DM Mono', monospace;
+    white-space: nowrap;
+    align-self: flex-end;
+    margin-bottom: 1px;
+  }
+  .break-duration.empty { color: var(--text-muted); background: var(--surface2); }
+  .break-duration.error { color: #c0392b; background: #fceaea; }
+
+  /* ─── DIVIDER between groups ─── */
+  .group-sep {
+    height: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 2px;
+  }
+  .group-sep-line { flex: 1; height: 1px; background: var(--border); }
+
+  /* ─── FOOTER ─── */
+  .footer {
+    display: flex;
+    gap: 0;
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .footer-item {
+    flex: 1;
+    padding: 14px 24px;
+    border-right: 1px solid var(--border);
+  }
+  .footer-item:last-child { border-right: none; }
+  .footer-label { font-size: 11px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.3px; text-transform: uppercase; margin-bottom: 3px; }
+  .footer-value { font-size: 14px; font-weight: 600; color: var(--text-primary); font-family: 'DM Mono', monospace; }
+  .footer-value.highlight { color: var(--blue); }
+
+  /* ─── EMPTY BREAK HINT ─── */
+  .no-breaks-hint {
+    text-align: center;
+    padding: 0;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+<div class="page-card">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <span class="topbar-title">Items &amp; Milestones</span>
+    <div class="topbar-right">
+      <div class="toggle-wrap">
+        <div class="toggle" id="templateToggle" onclick="this.classList.toggle('on')">
+          <div class="toggle-dot"></div>
+        </div>
+        <span>Template</span>
+      </div>
+      <button class="btn">+ Add Item</button>
+      <button class="btn" id="addBreakBtn">+ Add Break</button>
+    </div>
+  </div>
+
+  <!-- COLUMN HEADERS -->
+  <div class="col-headers">
+    <span class="col-count" id="itemCount">4 Items</span>
+    <span class="col-logic">Logic</span>
+    <span class="col-dur">KPI</span>
+    <span class="col-kpi">Rework</span>
+    <span class="col-rework">Review</span>
+    <span class="col-review">Skills</span>
+    <span class="col-skills"></span>
+    <span class="col-menu"></span>
+  </div>
+
+  <!-- LIST BODY -->
+  <div class="list-body" id="listBody">
+
+    <!-- GROUP 1: Work Item 1 (standalone) -->
+    <div class="group" id="group1">
+      <div class="item-row">
+        <div class="group-bar"></div>
+        <div class="item-inner">
+          <button class="item-expand">›</button>
+          <div class="item-name">
+            <div class="item-title">Work Item 1</div>
+            <span class="badge badge-easy">Easy</span>
+          </div>
+          <div class="col-logic-cell"><span class="logic-badge"><span class="check">✓</span></span></div>
+          <div class="col-dur-cell">1d, 10h</div>
+          <div class="col-kpi-cell">1</div>
+          <div class="col-rework-cell">1</div>
+          <div class="col-review-cell"></div>
+          <div class="col-skills-cell"><span class="skill-badge">3</span></div>
+          <div class="col-menu-cell">⋮</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BREAK ZONE A (between group 1 and group 2) -->
+    <div class="break-zone" id="breakZoneA"></div>
+
+    <!-- GROUP 2: Work Items 2 & 3 -->
+    <div class="group" id="group2">
+      <div class="item-row">
+        <div class="group-bar"></div>
+        <div class="item-inner">
+          <button class="item-expand">›</button>
+          <div class="item-name">
+            <div class="item-title">Work Item 2</div>
+            <span class="badge badge-easy">Easy</span>
+          </div>
+          <div class="col-logic-cell"><span class="logic-badge"><span class="check">✓</span></span></div>
+          <div class="col-dur-cell">4d, 8h</div>
+          <div class="col-kpi-cell">2</div>
+          <div class="col-rework-cell">2</div>
+          <div class="col-review-cell"></div>
+          <div class="col-skills-cell"><span class="skill-badge">3</span><span class="skill-badge blue">3</span></div>
+          <div class="col-menu-cell">⋮</div>
+        </div>
+      </div>
+      <div class="item-row">
+        <div class="group-bar"></div>
+        <div class="item-inner">
+          <button class="item-expand">›</button>
+          <div class="item-name">
+            <div class="item-title">Work Item 3</div>
+            <span class="badge badge-medium">Medium</span>
+          </div>
+          <div class="col-logic-cell">
+            <span class="logic-badge"><span class="check">✓</span> AND 07/19</span>
+          </div>
+          <div class="col-dur-cell">2d, 9h</div>
+          <div class="col-kpi-cell">1</div>
+          <div class="col-rework-cell">1</div>
+          <div class="col-review-cell"></div>
+          <div class="col-skills-cell"><span class="skill-badge">3</span></div>
+          <div class="col-menu-cell">⋮</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BREAK ZONE B (between group 2 and group 3) -->
+    <div class="break-zone" id="breakZoneB"></div>
+
+    <!-- GROUP 3: Work Item 4 -->
+    <div class="group" id="group3">
+      <div class="item-row">
+        <div class="group-bar"></div>
+        <div class="item-inner">
+          <button class="item-expand">›</button>
+          <div class="item-name">
+            <div class="item-title">Work Item 4</div>
+            <span class="badge badge-medium">Medium</span>
+          </div>
+          <div class="col-logic-cell">
+            <div class="logic-depend">
+              <span class="logic-badge"><span class="check">✓</span> OR 07/23</span>
+              <span class="depend-label">Depend on</span>
+              <span class="depend-name">Work Item 2</span>
+            </div>
+          </div>
+          <div class="col-dur-cell">4d, 4h</div>
+          <div class="col-kpi-cell">2</div>
+          <div class="col-rework-cell">1</div>
+          <div class="col-review-cell"></div>
+          <div class="col-skills-cell"><span class="skill-badge">2</span></div>
+          <div class="col-menu-cell">⋮</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /list-body -->
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-item">
+      <div class="footer-label">Published On</div>
+      <div class="footer-value">Jul 17, 2024</div>
+    </div>
+    <div class="footer-item">
+      <div class="footer-label">Total KPI</div>
+      <div class="footer-value">9d, 31h</div>
+    </div>
+    <div class="footer-item">
+      <div class="footer-label">Projected Done Date</div>
+      <div class="footer-value highlight" id="projDate">Jul 26, 2024</div>
+    </div>
+    <div class="footer-item">
+      <div class="footer-label">Due Date</div>
+      <div class="footer-value">Aug 1, 2024</div>
+    </div>
+  </div>
+
+</div><!-- /page-card -->
+
+<script>
+  let breakCounter = 0;
+  const BASE_PROJ_DATE = new Date('2024-07-26');
+
+  function calcDays(start, end) {
+    if (!start || !end) return null;
+    const s = new Date(start), e = new Date(end);
+    const diff = Math.round((e - s) / 86400000);
+    return diff;
+  }
+
+  function updateProjectedDate() {
+    let extra = 0;
+    document.querySelectorAll('.break-row').forEach(row => {
+      const s = row.querySelector('.break-start').value;
+      const e = row.querySelector('.break-end').value;
+      const d = calcDays(s, e);
+      if (d && d > 0) extra += d;
+    });
+    const result = new Date(BASE_PROJ_DATE);
+    result.setDate(result.getDate() + extra);
+    document.getElementById('projDate').textContent =
+      result.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function createBreakRow(zoneId) {
+    breakCounter++;
+    const id = breakCounter;
+
+    const row = document.createElement('div');
+    row.className = 'break-row';
+    row.id = 'break-' + id;
+
+    row.innerHTML = `
+      <div class="break-inner">
+        <div class="break-header">
+          <div class="break-icon">
+            <svg viewBox="0 0 16 16">
+              <rect x="2" y="7" width="12" height="2" rx="1"/>
+              <path d="M5 4l-3 3 3 3M11 4l3 3-3 3"/>
+            </svg>
+          </div>
+          <span class="break-title">Break ${id}</span>
+          <button class="break-remove" title="Remove break">×</button>
+        </div>
+        <div class="break-dates">
+          <div class="date-field">
+            <span class="date-label">Start date</span>
+            <input class="date-input break-start" type="date" />
+          </div>
+          <span class="date-sep">→</span>
+          <div class="date-field">
+            <span class="date-label">End date</span>
+            <input class="date-input break-end" type="date" />
+          </div>
+          <span class="break-duration empty" id="dur-${id}">Set dates</span>
+        </div>
+      </div>
+    `;
+
+    const startEl = row.querySelector('.break-start');
+    const endEl   = row.querySelector('.break-end');
+    const durEl   = row.querySelector('#dur-' + id);
+
+    function refreshDur() {
+      const d = calcDays(startEl.value, endEl.value);
+      if (!startEl.value || !endEl.value) {
+        durEl.textContent = 'Set dates';
+        durEl.className = 'break-duration empty';
+      } else if (d <= 0) {
+        durEl.textContent = 'Invalid range';
+        durEl.className = 'break-duration error';
+      } else {
+        durEl.textContent = d + ' day' + (d !== 1 ? 's' : '');
+        durEl.className = 'break-duration';
+      }
+      updateProjectedDate();
+    }
+
+    startEl.addEventListener('change', function() {
+      if (this.value) endEl.min = this.value;
+      refreshDur();
+    });
+    endEl.addEventListener('change', refreshDur);
+
+    row.querySelector('.break-remove').addEventListener('click', function() {
+      row.style.opacity = '0';
+      row.style.transform = 'translateY(-4px)';
+      row.style.transition = 'opacity 0.15s, transform 0.15s';
+      setTimeout(() => { row.remove(); updateProjectedDate(); }, 150);
+    });
+
+    return row;
+  }
+
+  document.getElementById('addBreakBtn').addEventListener('click', function() {
+    // Default: insert break in zone B (between group 2 and group 3)
+    const zone = document.getElementById('breakZoneB');
+    const row = createBreakRow('B');
+    zone.appendChild(row);
+    row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+</script>
+</body>
+</html>
