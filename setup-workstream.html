@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Setup Workstream — Wipflo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --font: 'Montserrat', sans-serif;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #edf5fc;
+  --border: #e6e8eb;
+  --border-active: #dae9f7;
+  --border-blue: #0050ff;
+  --c-primary: #181919;
+  --c-secondary: #63666a;
+  --c-error: #ff5017;
+  --c-blue: #0050ff;
+  --c-warn-dark: #a36f00;
+  --avatar-bg: #edf5fc;
+  --avatar-c: #0078a3;
+  --switch-off: #a9b0b8;
+  --chip-bg: #edf5fc;
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-round: 100000px;
+}
+html, body { height: 100%; }
+body {
+  font-family: var(--font);
+  background: var(--bg-primary);
+  color: var(--c-primary);
+  font-size: 14px;
+  line-height: 18px;
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+svg { display: block; flex-shrink: 0; }
+a { text-decoration: none; }
+
+/* ====== SIDEBAR ====== */
+.sidebar {
+  width: 280px;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.sb-logo {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24px 16px;
+}
+.sb-logo-left { display: flex; align-items: center; gap: 6px; }
+.sb-logo-icon {
+  width: 48px; height: 44px;
+}
+.sb-logo-name {
+  font-size: 20px; font-weight: 700; color: var(--c-primary);
+  letter-spacing: -0.4px;
+}
+.sb-collapse {
+  width: 42px; height: 42px;
+  border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border: none; background: transparent;
+  color: var(--c-secondary);
+}
+.sb-collapse:hover { background: var(--bg-secondary); }
+
+.nav-list {
+  padding: 0 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
+  min-height: 40px;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  font-weight: 600; font-size: 14px; line-height: 18px;
+  color: var(--c-secondary);
+  overflow: hidden;
+}
+.nav-item:hover { background: var(--bg-secondary); }
+.nav-item.active { background: var(--bg-tertiary); color: var(--c-primary); }
+.nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+.nav-item-label { flex: 1; }
+.nav-badge {
+  border: 1px solid var(--border);
+  border-radius: var(--r-round);
+  padding: 3px 6px;
+  font-size: 14px; font-weight: 600; color: var(--c-primary);
+  line-height: 18px; min-width: 24px; text-align: center;
+}
+.nav-badge.warn {
+  border: 1px dashed #ffb703;
+  background: #fef9d9;
+  color: var(--c-warn-dark);
+}
+.sb-filler { flex: 1; }
+.sb-bottom { padding: 0 16px; display: flex; flex-direction: column; gap: 8px; }
+.help-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-active);
+  border-radius: var(--r-sm);
+  padding: 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.help-card p { font-size: 12px; font-weight: 500; color: var(--c-secondary); line-height: 16px; text-align: center; }
+.help-card a { font-size: 12px; font-weight: 600; color: var(--c-blue); }
+.mini-dash {
+  background: var(--bg-secondary);
+  border-radius: var(--r-sm);
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.mini-dash-label { font-size: 12px; font-weight: 500; color: var(--c-secondary); line-height: 16px; }
+.mini-row {
+  display: flex; align-items: center;
+  padding: 4px 0;
+  font-weight: 600; font-size: 14px; color: var(--c-primary); line-height: 18px;
+}
+.mini-row span { flex: 1; }
+.user-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 8px 24px;
+}
+.u-avatar {
+  width: 28px; height: 28px; border-radius: var(--r-round);
+  background: var(--avatar-bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: var(--avatar-c);
+  flex-shrink: 0;
+}
+.u-info { flex: 1; }
+.u-name { font-size: 14px; font-weight: 600; color: var(--c-primary); line-height: 18px; }
+.u-role { font-size: 12px; font-weight: 500; color: var(--c-secondary); line-height: 16px; }
+.u-gear {
+  width: 42px; height: 42px; border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.u-gear:hover { background: var(--bg-secondary); }
+
+/* ====== MAIN ====== */
+.main {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column;
+  background: var(--bg-primary);
+}
+
+/* PAGE HEADER */
+.page-header {
+  padding: 24px 24px 8px;
+  display: flex; flex-direction: column; gap: 8px;
+  flex-shrink: 0;
+}
+.breadcrumb {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 500; color: var(--c-secondary); line-height: 16px;
+}
+.breadcrumb a { color: var(--c-secondary); }
+.breadcrumb svg { width: 12px; height: 12px; }
+.breadcrumb .cur { font-weight: 600; }
+.page-row { display: flex; align-items: center; gap: 12px; }
+.page-title { font-size: 20px; font-weight: 600; color: var(--c-primary); line-height: 28px; white-space: nowrap; }
+.page-row-filler { flex: 1; }
+.hdr-actions { display: flex; align-items: center; gap: 12px; }
+
+/* Buttons */
+.btn {
+  height: 34px; border-radius: var(--r-sm);
+  font-family: var(--font); font-weight: 600; font-size: 14px;
+  cursor: pointer; display: inline-flex; align-items: center;
+  padding: 0 12px; border: none; white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s;
+  text-decoration: none;
+}
+.btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--c-secondary); }
+.btn-cancel:hover { background: var(--bg-secondary); }
+.btn-draft { background: transparent; border: 1px solid var(--border-active); color: var(--c-blue); }
+.btn-draft:hover { background: var(--bg-tertiary); }
+.btn-save {
+  background: var(--c-blue); color: #fff;
+  padding: 0; gap: 0; overflow: hidden;
+}
+.btn-save:hover { background: #0040dd; }
+.btn-save-text { padding: 0 12px; }
+.btn-save-div { width: 1px; height: 34px; background: rgba(255,255,255,0.25); flex-shrink: 0; }
+.btn-save-caret { padding: 0 10px; display: flex; align-items: center; }
+
+/* AI button */
+.btn-ai {
+  height: 28px; border-radius: var(--r-sm);
+  font-family: var(--font); font-weight: 600; font-size: 12px;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+  padding: 0 10px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff; color: #2563eb;
+  transition: all 0.12s; white-space: nowrap; flex-shrink: 0;
+}
+.btn-ai:hover { background: #dbeafe; border-color: #93c5fd; box-shadow: 0 1px 4px rgba(37,99,235,0.15); }
+.btn-ai:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn-ai svg { width: 12px; height: 12px; }
+
+/* TABS */
+.tabs {
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 16px; padding: 0 24px;
+  flex-shrink: 0;
+}
+.tab {
+  padding: 12px 0;
+  font-size: 14px; font-weight: 600; color: var(--c-secondary); line-height: 18px;
+  cursor: pointer; border-bottom: 2px solid transparent;
+  transition: color 0.1s, border-color 0.1s; white-space: nowrap;
+}
+.tab:hover { color: var(--c-primary); }
+.tab.active { color: var(--c-primary); border-bottom-color: var(--c-blue); }
+
+/* CONTENT AREA */
+.content { display: flex; flex: 1; min-height: 0; }
+
+/* LEFT */
+.form-col {
+  flex: 1; min-width: 0;
+  max-width: 60%;
+  padding: 24px;
+  display: flex; flex-direction: column; gap: 32px;
+  overflow-y: auto;
+}
+
+/* section headings */
+.sec-title { font-size: 16px; font-weight: 600; color: var(--c-primary); line-height: 24px; }
+.sec-sub { font-size: 14px; font-weight: 500; color: var(--c-secondary); line-height: 18px; margin-top: 4px; }
+.sec-hdr { margin-bottom: 16px; }
+.sec-hdr-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.sec-hdr-ai { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-top: 2px; }
+
+/* form rows */
+.f-rows { display: flex; flex-direction: column; gap: 12px; }
+.f-row { display: flex; gap: 16px; align-items: flex-start; }
+
+/* Field */
+.field { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.field.w420 { flex: none; width: 420px; }
+.flabel {
+  font-size: 12px; font-weight: 600; color: var(--c-secondary);
+  line-height: 16px; white-space: nowrap;
+  display: flex; align-items: center; gap: 2px;
+}
+.req { color: var(--c-error); }
+
+/* Input wrap — the core input component */
+.iwrap {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  display: flex; align-items: center;
+  padding: 12px;
+  gap: 8px;
+  background: var(--bg-primary);
+  min-height: 44px;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.2s;
+  position: relative;
+}
+.iwrap:focus-within { border-color: var(--c-blue); box-shadow: 0 0 0 2px rgba(0,80,255,0.08); }
+.iwrap.iw-disabled { background: var(--bg-secondary); }
+.iinput {
+  flex: 1; min-width: 0;
+  font-family: var(--font); font-size: 14px; font-weight: 500;
+  color: var(--c-primary); line-height: 18px;
+  border: none; outline: none; background: transparent; padding: 0;
+}
+.iinput::placeholder { color: var(--c-secondary); }
+.iinput.ph { color: var(--c-secondary); }
+textarea.iinput { resize: vertical; min-height: 70px; line-height: 18px; }
+.iicon { width: 20px; height: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--c-secondary); }
+.iicon svg { width: 20px; height: 20px; }
+.iunit { font-size: 12px; font-weight: 500; color: var(--c-secondary); flex-shrink: 0; }
+
+.av-sm {
+  width: 20px; height: 20px; border-radius: var(--r-round);
+  background: var(--avatar-bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: var(--avatar-c);
+  letter-spacing: 0.4px; text-transform: uppercase;
+  flex-shrink: 0; overflow: hidden;
+}
+.av-sm img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Switch */
+.sw-row { display: flex; align-items: center; gap: 8px; }
+.sw {
+  width: 32px; height: 20px; border-radius: 100px;
+  background: var(--switch-off);
+  padding: 4px; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center;
+  transition: background 0.2s;
+}
+.sw.on { background: var(--c-blue); }
+.sw-thumb {
+  width: 12px; height: 12px; border-radius: 50%; background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+.sw.on .sw-thumb { transform: translateX(12px); }
+.sw-lbl { font-size: 14px; font-weight: 600; color: var(--c-secondary); line-height: 18px; }
+
+/* Radio */
+.rg { display: flex; gap: 20px; align-items: center; margin-top: 12px; }
+.ro { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.rb {
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: border-color 0.15s;
+}
+.rb.sel { border-color: var(--c-blue); }
+.rb.sel::after { content:''; width:10px; height:10px; border-radius:50%; background: var(--c-blue); }
+.rl { font-size: 14px; font-weight: 500; color: var(--c-primary); line-height: 18px; }
+.rl.sel { color: var(--c-blue); }
+
+/* Other details */
+.od-hdr {
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer; user-select: none;
+}
+.od-caret { width: 16px; height: 16px; flex-shrink: 0; color: var(--c-secondary); transition: transform 0.2s; }
+.od-body { display: flex; flex-direction: column; gap: 32px; margin-top: 12px; }
+.kpis-lbl { font-size: 12px; font-weight: 600; color: var(--c-primary); line-height: 16px; }
+
+/* ====== RIGHT ====== */
+.right-col {
+  width: 40%; flex-shrink: 0;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  padding: 24px;
+  display: flex; flex-direction: column; gap: 8px;
+  overflow-y: auto;
+}
+.icard {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.icard-title { font-size: 16px; font-weight: 600; color: var(--c-primary); line-height: 24px; }
+.drows { display: flex; flex-direction: column; gap: 12px; }
+.drow { display: flex; gap: 16px; align-items: flex-start; padding: 2px 0; }
+.dlabel { width: 160px; flex-shrink: 0; font-size: 14px; font-weight: 600; color: var(--c-secondary); line-height: 18px; }
+.dval { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; color: var(--c-primary); line-height: 18px; }
+.dval-row { display: flex; align-items: center; gap: 8px; }
+.av24 { width: 24px; height: 24px; border-radius: var(--r-round); overflow: hidden; flex-shrink: 0; background: var(--avatar-bg); }
+.av24 img { width: 100%; height: 100%; object-fit: cover; }
+.tags-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag { background: var(--chip-bg); border-radius: var(--r-xs); padding: 4px; font-size: 14px; font-weight: 500; color: var(--c-primary); line-height: 18px; }
+.tag b { font-weight: 600; }
+
+/* ====== AI STATES ====== */
+.ai-bar {
+  display: none;
+  align-items: center; gap: 10px;
+  padding: 9px 12px;
+  background: #f0f7ff;
+  border: 1px solid #bfdbfe;
+  border-radius: var(--r-sm);
+  margin-bottom: 14px;
+}
+.ai-bar.on { display: flex; }
+.ai-spin {
+  width: 14px; height: 14px;
+  border: 1.5px solid #bfdbfe;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.65s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.ai-txt { font-size: 12px; font-weight: 600; color: #1d4ed8; flex: 1; }
+.ai-dots { display: flex; gap: 4px; }
+.ai-dot { width: 5px; height: 5px; border-radius: 50%; background: #bfdbfe; transition: background 0.25s; }
+.ai-dot.done { background: #2563eb; }
+
+@keyframes shimmer {
+  0%   { background-position: -800px 0; }
+  100% { background-position: 800px 0; }
+}
+
+@keyframes bpulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(0,80,255,0); }
+  50%      { box-shadow: 0 0 0 3px rgba(0,80,255,0.12); }
+}
+.filling { border-color: #0050ff !important; animation: bpulse 0.85s ease-in-out infinite; }
+
+@keyframes fade-hi {
+  0%   { background-color: #dbeafe; }
+  100% { background-color: var(--bg-primary); }
+}
+.filled { animation: fade-hi 1.2s ease-out forwards; border-color: #93c5fd !important; }
+.iw-disabled.filled { animation: none; }
+
+.ai-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 600;
+  background: #eff6ff; color: #2563eb;
+  border: 1px solid #bfdbfe; border-radius: 100px;
+  padding: 1px 6px; margin-left: 4px;
+  opacity: 0; transition: opacity 0.3s;
+  vertical-align: middle; flex-shrink: 0;
+}
+.ai-badge.on { opacity: 1; }
+.ai-badge svg { width: 8px; height: 8px; }
+
+.rev-link {
+  font-size: 12px; font-weight: 600; color: #2563eb;
+  text-decoration: none; opacity: 0; transition: opacity 0.4s;
+  white-space: nowrap;
+}
+.rev-link.on { opacity: 1; }
+.rev-link:hover { text-decoration: underline; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 20px; right: 20px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+  display: flex; align-items: flex-start; gap: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  z-index: 9999;
+  transform: translateY(16px); opacity: 0;
+  transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+  pointer-events: none; max-width: 300px;
+}
+.toast.on { transform: translateY(0); opacity: 1; pointer-events: auto; }
+.toast-icon {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #f0fdf4; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.toast-icon svg { width: 10px; height: 10px; }
+.t-title { font-size: 12px; font-weight: 600; color: var(--c-primary); }
+.t-sub { font-size: 11px; font-weight: 500; color: var(--c-secondary); margin-top: 2px; }
+.t-sub a { color: var(--c-blue); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-left">
+      <div class="sb-logo-icon">
+        <svg width="48" height="44" viewBox="0 0 48 44" fill="none">
+          <rect x="0" y="8" width="9" height="28" rx="4.5" fill="#0050ff"/>
+          <rect x="12" y="0" width="9" height="44" rx="4.5" fill="#0050ff"/>
+          <rect x="24" y="8" width="9" height="28" rx="4.5" fill="#0050ff" opacity="0.45"/>
+          <rect x="36" y="16" width="9" height="20" rx="4.5" fill="#0050ff" opacity="0.2"/>
+        </svg>
+      </div>
+      <span class="sb-logo-name">Wipflo</span>
+    </div>
+    <button class="sb-collapse">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11.25 13.5L6.75 9L11.25 4.5" stroke="#63666a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+
+  <div class="nav-list">
+    <div class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 5.5l6-4 6 4V13a1 1 0 01-1 1H3a1 1 0 01-1-1V5.5z" stroke="currentColor" stroke-width="1.5"/><path d="M6 14V8h4v6" stroke="currentColor" stroke-width="1.5"/></svg>
+      <span class="nav-item-label">Focus</span>
+      <span class="nav-badge">10</span>
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+      <span class="nav-item-label">Dashboard</span>
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M13 13H3V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M5 10l3-3 2 2 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="nav-item-label">Engagements</span>
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 11.5l4-5 2 2 2-2.5 4 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="nav-item-label">Activity</span>
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="nav-item-label">Marketplace</span>
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M10 2H4a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V6L10 2z" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v4h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="nav-item-label">Overpass</span>
+    </div>
+    <div class="nav-item active">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M9 2H4a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 2l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M5 8h6M5 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="nav-item-label">Clients</span>
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M2 14c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M11 7.5c1.1 0 2 .9 2 2s-.9 2-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="nav-item-label">My Squads</span>
+      <span class="nav-badge warn">4</span>
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.5"/></svg>
+      <span class="nav-item-label">Team Workload</span>
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="nav-item-label">Reports</span>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-left:auto;width:16px;height:16px"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+  </div>
+
+  <div class="sb-filler"></div>
+
+  <div class="sb-bottom">
+    <div class="help-card">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="12" stroke="#0050ff" stroke-width="1.5" opacity="0.4"/><path d="M16 10a3 3 0 013 3c0 1.5-1 2.5-2 3-.5.25-1 .75-1 1.5V19" stroke="#0050ff" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="22" r="1" fill="#0050ff"/></svg>
+      <p>Facing any issue or have new idea?</p>
+      <a href="#">Submit Idea</a>
+    </div>
+    <div class="mini-dash">
+      <div class="mini-dash-label">Mini Dashboard</div>
+      <div class="mini-row"><span>Clients Following</span><span class="nav-badge">5</span></div>
+      <div class="mini-row"><span>WIs Completed This Year</span><span class="nav-badge">1</span></div>
+    </div>
+    <div class="user-row">
+      <div class="u-avatar">MN</div>
+      <div class="u-info">
+        <div class="u-name">Mehraniya, Neeraj</div>
+        <div class="u-role">Tax Associate</div>
+      </div>
+      <div class="u-gear">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="2.25" stroke="#63666a" stroke-width="1.4"/><path d="M9 1.5v2M9 14.5v2M1.5 9h2M14.5 9h2M3.7 3.7l1.4 1.4M12.9 12.9l1.4 1.4M3.7 14.3l1.4-1.4M12.9 5.1l1.4-1.4" stroke="#63666a" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ===== MAIN ===== -->
+<div class="main">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="breadcrumb">
+      <a href="#">223345 Mint Moving LLC</a>
+      <svg viewBox="0 0 12 12" fill="none"><path d="M4.5 3l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <a href="#">WE-123456</a>
+      <svg viewBox="0 0 12 12" fill="none"><path d="M4.5 3l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="cur">Setup Workstream</span>
+    </div>
+    <div class="page-row">
+      <div class="page-title">Setup Workstream</div>
+      <button class="btn-ai" id="aiFillBtn" onclick="startFill()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/><path d="M5 3l.75 2.25L8 6l-2.25.75L5 9l-.75-2.25L2 6l2.25-.75z" stroke-width="1.5"/></svg>
+        Auto Fill with AI
+      </button>
+      <div class="page-row-filler"></div>
+      <div class="hdr-actions">
+        <button class="btn btn-cancel">Cancel</button>
+        <button class="btn btn-draft">Save as Draft</button>
+        <button class="btn btn-save">
+          <span class="btn-save-text">Save &amp; Next</span>
+          <span class="btn-save-div"></span>
+          <span class="btn-save-caret">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- AI status bar -->
+    <div class="ai-bar" id="aiBar">
+      <div class="ai-spin"></div>
+      <div class="ai-txt" id="aiTxt">Understanding client data...</div>
+      <div class="ai-dots">
+        <div class="ai-dot" id="d0"></div>
+        <div class="ai-dot" id="d1"></div>
+        <div class="ai-dot" id="d2"></div>
+        <div class="ai-dot" id="d3"></div>
+        <div class="ai-dot" id="d4"></div>
+        <div class="ai-dot" id="d5"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active">Details</div>
+    <div class="tab">Options</div>
+    <div class="tab">Values</div>
+    <div class="tab">Items &amp; Milestones</div>
+    <div class="tab">Assignee &amp; Reviewers</div>
+    <div class="tab">Deliverables</div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- LEFT FORM -->
+    <div class="form-col">
+
+      <!-- Section: Workstream Details -->
+      <div>
+        <div class="sec-hdr">
+          <div class="sec-hdr-top">
+            <div>
+              <div class="sec-title">Workstream Details</div>
+              <div class="sec-sub">These details are required to publish the workstream</div>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="f-rows">
+          <!-- Row 1 -->
+          <div class="f-row">
+            <div class="field w420">
+              <div class="flabel">Workstream Name <span class="req">*</span></div>
+              <div class="iwrap" id="iw_name">
+                <input class="iinput" id="f_name" type="text" value="1040 Tax Return">
+                <span class="ai-badge" id="b_name"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg>AI</span>
+              </div>
+            </div>
+            <div class="field">
+              <div class="flabel">Project Manager <span class="req">*</span></div>
+              <div class="iwrap" id="iw_pm">
+                <div class="av-sm"><img src="https://www.figma.com/api/mcp/asset/c5767ed1-57a8-443d-ac82-abb7b3d844dc" onerror="this.style.display='none'"></div>
+                <input class="iinput" id="f_pm" type="text" value="Ridhima">
+                <div class="iicon"><svg viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="#63666a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <span class="ai-badge" id="b_pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg>AI</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Auto Roll -->
+          <div class="sw-row">
+            <div class="sw" onclick="this.classList.toggle('on')"><div class="sw-thumb"></div></div>
+            <span class="sw-lbl">Auto Roll</span>
+          </div>
+
+          <!-- Row: Complexity + WS Due Date -->
+          <div class="f-row">
+            <div class="field">
+              <div class="flabel">Complexity</div>
+              <div class="iwrap" id="iw_complexity">
+                <input class="iinput" id="f_complexity" type="text" value="None">
+                <div class="iicon"><svg viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="#63666a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <span class="ai-badge" id="b_complexity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg>AI</span>
+              </div>
+            </div>
+            <div class="field">
+              <div class="flabel">WS Due Date <span class="req">*</span></div>
+              <div class="iwrap" id="iw_due">
+                <input class="iinput" id="f_due" type="text" value="03/31/2027">
+                <div class="iicon"><svg viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="14" rx="2" stroke="#63666a" stroke-width="1.5"/><path d="M7 2v4M13 2v4M3 9h14" stroke="#63666a" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+                <span class="ai-badge" id="b_due"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg>AI</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row: Period Type + Year -->
+          <div class="f-row">
+            <div class="field">
+              <div class="flabel">Period Type <span class="req">*</span></div>
+              <div class="iwrap" id="iw_period">
+                <input class="iinput" id="f_period" type="text" value="Annual">
+                <div class="iicon"><svg viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="#63666a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <span class="ai-badge" id="b_period"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg>AI</span>
+              </div>
+            </div>
+            <div class="field">
+              <div class="flabel">Year <span class="req">*</span></div>
+              <div class="iwrap" id="iw_year">
+                <input class="iinput" id="f_year" type="text" value="2026">
+                <div class="iicon"><svg viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="#63666a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <span class="ai-badge" id="b_year"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg>AI</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row: Planned Publish Date + Renewable Workstream -->
+          <div class="f-row">
+            <div class="field">
+              <div class="flabel">Planned Publish Date</div>
+              <div class="iwrap" id="iw_publish">
+                <input class="iinput" id="f_publish" type="text" value="05/22/2026">
+                <div class="iicon"><svg viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="14" rx="2" stroke="#63666a" stroke-width="1.5"/><path d="M7 2v4M13 2v4M3 9h14" stroke="#63666a" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+                <span class="ai-badge" id="b_publish"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg>AI</span>
+              </div>
+            </div>
+            <div class="field">
+              <div class="flabel">Renewable Workstream</div>
+              <div class="rg">
+                <div class="ro"><div class="rb sel"></div><span class="rl sel">Yes</span></div>
+                <div class="ro"><div class="rb"></div><span class="rl">No</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Other Details -->
+      <div>
+        <div class="od-hdr" onclick="toggleOD()">
+          <svg class="od-caret" id="odCaret" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div>
+            <div class="sec-title">Other Details</div>
+            <div class="sec-sub">These details are optional to publish the workstream</div>
+          </div>
+        </div>
+
+        <div class="od-body" id="odBody">
+          <!-- Description -->
+          <div class="f-rows">
+            <div class="field">
+              <div class="flabel">Description</div>
+              <div class="iwrap" id="iw_desc" style="align-items:flex-start;padding:13px 12px;min-height:96px;position:relative;">
+                <textarea class="iinput" id="f_desc" placeholder="Enter Description"></textarea>
+                <span class="ai-badge" id="b_desc" style="position:absolute;top:10px;right:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg>AI</span>
+              </div>
+            </div>
+
+            <div class="f-row">
+              <div class="field">
+                <div class="flabel">Budgeted Min Cost</div>
+                <div class="iwrap" id="iw_minc">
+                  <div class="iicon"><svg viewBox="0 0 20 20" fill="none"><path d="M10 3v14M7 6.5h4.5a2 2 0 010 4H8.5a2 2 0 010 4H14" stroke="#63666a" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+                  <input class="iinput ph" id="f_minc" type="text" placeholder="Enter Min Cost">
+                  <span class="ai-badge" id="b_minc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg>AI</span>
+                </div>
+              </div>
+              <div class="field">
+                <div class="flabel">Budgeted Max Cost</div>
+                <div class="iwrap" id="iw_maxc">
+                  <div class="iicon"><svg viewBox="0 0 20 20" fill="none"><path d="M10 3v14M7 6.5h4.5a2 2 0 010 4H8.5a2 2 0 010 4H14" stroke="#63666a" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+                  <input class="iinput ph" id="f_maxc" type="text" placeholder="Enter Max Cost">
+                  <span class="ai-badge" id="b_maxc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg>AI</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="f-row">
+              <div class="field">
+                <div class="flabel">Priority</div>
+                <div class="iwrap" id="iw_priority">
+                  <input class="iinput ph" id="f_priority" type="text" placeholder="Select Priority">
+                  <div class="iicon"><svg viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="#63666a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                  <span class="ai-badge" id="b_priority"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg>AI</span>
+                </div>
+              </div>
+              <div class="field">
+                <div class="flabel">Project RE</div>
+                <div class="iwrap" id="iw_re">
+                  <div class="av-sm" style="font-size:9px;font-weight:700;letter-spacing:0.4px;">MN</div>
+                  <input class="iinput" id="f_re" type="text" value="Mehraniya, Neeraj">
+                  <div class="iicon"><svg viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="#63666a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                  <span class="ai-badge" id="b_re"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg>AI</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="f-row">
+              <div class="field">
+                <div class="flabel">International Project Manager</div>
+                <div class="iwrap" id="iw_ipm">
+                  <div class="av-sm" style="font-size:9px;font-weight:700;letter-spacing:0.4px;">JC</div>
+                  <input class="iinput" id="f_ipm" type="text" value="Chawla, Jayant">
+                  <div class="iicon"><svg viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="#63666a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                </div>
+              </div>
+              <div class="field">
+                <div class="flabel">Project ID</div>
+                <div class="iwrap">
+                  <input class="iinput" id="f_pid" type="text" value="PID00001">
+                </div>
+              </div>
+            </div>
+
+            <div class="f-row">
+              <div class="field">
+                <div class="flabel">Chargeable?</div>
+                <div class="rg">
+                  <div class="ro"><div class="rb sel"></div><span class="rl sel">Yes</span></div>
+                  <div class="ro"><div class="rb"></div><span class="rl">No</span></div>
+                </div>
+              </div>
+              <div class="field">
+                <div class="flabel">Okay to Offshore?</div>
+                <div class="rg" id="offsRg">
+                  <div class="ro"><div class="rb sel" id="offs_yes"></div><span class="rl sel">Yes</span></div>
+                  <div class="ro"><div class="rb" id="offs_no"></div><span class="rl">No</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="f-row">
+              <div class="field">
+                <div class="flabel">Okay to Contact?</div>
+                <div class="rg">
+                  <div class="ro"><div class="rb sel"></div><span class="rl sel">Yes</span></div>
+                  <div class="ro"><div class="rb"></div><span class="rl">No</span></div>
+                </div>
+              </div>
+              <div class="field" style="opacity:0;pointer-events:none"></div>
+            </div>
+          </div>
+
+          <!-- KPIs -->
+          <div class="f-rows">
+            <div class="kpis-lbl">KPIs</div>
+            <div class="f-row">
+              <div class="field">
+                <div class="flabel">Budget to Actual</div>
+                <div class="iwrap" id="iw_budga">
+                  <input class="iinput ph" id="f_budga" type="text" placeholder="Enter">
+                  <span class="iunit">hrs</span>
+                </div>
+              </div>
+              <div class="field">
+                <div class="flabel">Cost to Actual</div>
+                <div class="iwrap" id="iw_costa">
+                  <div class="iicon"><svg viewBox="0 0 20 20" fill="none"><path d="M10 3v14M7 6.5h4.5a2 2 0 010 4H8.5a2 2 0 010 4H14" stroke="#63666a" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+                  <input class="iinput ph" id="f_costa" type="text" placeholder="Enter">
+                </div>
+              </div>
+            </div>
+            <div class="f-row">
+              <div class="field">
+                <div class="flabel">Budgeted Hours</div>
+                <div class="iwrap iw-disabled" id="iw_hours">
+                  <input class="iinput" id="f_hours" type="text" value="0" style="background:transparent">
+                  <span class="iunit">hrs</span>
+                  <span class="ai-badge" id="b_hours"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg>AI</span>
+                </div>
+              </div>
+              <div class="field" style="opacity:0;pointer-events:none"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /form-col -->
+
+    <!-- RIGHT COLUMN -->
+    <div class="right-col">
+      <div class="icard">
+        <div class="icard-title">Client Info</div>
+        <div class="drows">
+          <div class="drow"><span class="dlabel">Client ID</span><span class="dval">223345</span></div>
+          <div class="drow"><span class="dlabel">Client Name</span><span class="dval">Mint Moving LLC</span></div>
+          <div class="drow"><span class="dlabel">Grade</span><span class="dval">C</span></div>
+          <div class="drow">
+            <span class="dlabel">Account Relationship Executive</span>
+            <div class="dval">
+              <div class="dval-row">
+                <div class="av24" style="display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#0078a3;background:#edf5fc;">
+                  <img src="https://www.figma.com/api/mcp/asset/c5767ed1-57a8-443d-ac82-abb7b3d844dc" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
+                </div>
+                <span>Russell, Dianne</span>
+              </div>
+            </div>
+          </div>
+          <div class="drow"><span class="dlabel">Industry</span><span class="dval">Private Client</span></div>
+          <div class="drow"><span class="dlabel">Client Year End</span><span class="dval">December</span></div>
+        </div>
+      </div>
+
+      <div class="icard">
+        <div class="icard-title">Client Tags</div>
+        <div class="tags-wrap">
+          <div class="tag">AuditGrade: <b>Audit-4</b></div>
+          <div class="tag">TaxGrade: <b>Tax A+</b></div>
+          <div class="tag">SecurityGrade: <b>Security A+</b></div>
+        </div>
+      </div>
+
+      <div class="icard">
+        <div class="icard-title">Template Info</div>
+        <div class="drows">
+          <div class="drow"><span class="dlabel">Template Name</span><span class="dval">EL WS with Renewal for Tax</span></div>
+          <div class="drow"><span class="dlabel">Department Name</span><span class="dval">Income Tax Department (ITD)</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+  </div>
+  <div>
+    <div class="t-title">Workstream details generated successfully.</div>
+    <div class="t-sub"><a href="#">Review AI suggestions</a> to confirm all fields.</div>
+  </div>
+</div>
+
+<script>
+const STEPS = [
+  "Understanding client data...",
+  "Reviewing template configuration...",
+  "Generating workstream details...",
+  "Configuring dates and KPIs...",
+  "Suggesting assignments...",
+  "Finalizing setup..."
+];
+
+const FIELDS = [
+  { id:'f_name',     iw:'iw_name',     b:'b_name',     val:'1040 Tax Return — FY2026',   delay:0,    textarea:false },
+  { id:'f_pm',       iw:'iw_pm',       b:'b_pm',       val:'Ridhima',                    delay:200,  textarea:false },
+  { id:'f_complexity',iw:'iw_complexity',b:'b_complexity',val:'High',                   delay:420,  textarea:false },
+  { id:'f_due',      iw:'iw_due',      b:'b_due',      val:'04/15/2026',                 delay:640,  textarea:false },
+  { id:'f_period',   iw:'iw_period',   b:'b_period',   val:'Annual',                     delay:840,  textarea:false },
+  { id:'f_year',     iw:'iw_year',     b:'b_year',     val:'2026',                       delay:1040, textarea:false },
+  { id:'f_publish',  iw:'iw_publish',  b:'b_publish',  val:'04/01/2026',                 delay:1240, textarea:false },
+  { id:'f_desc',     iw:'iw_desc',     b:'b_desc',     val:'Federal and multi-state income tax return. Includes K-1 reconciliation, foreign tax credit review, and AMT analysis across four state jurisdictions.', delay:1450, textarea:true },
+  { id:'f_minc',     iw:'iw_minc',     b:'b_minc',     val:'12,000',                     delay:1900, textarea:false },
+  { id:'f_maxc',     iw:'iw_maxc',     b:'b_maxc',     val:'18,500',                     delay:2100, textarea:false },
+  { id:'f_priority', iw:'iw_priority', b:'b_priority', val:'High',                       delay:2300, textarea:false },
+  { id:'f_re',       iw:'iw_re',       b:'b_re',       val:'Mehraniya, Neeraj',           delay:2500, textarea:false },
+  { id:'f_hours',    iw:'iw_hours',    b:'b_hours',    val:'124',                        delay:2700, textarea:false },
+];
+
+let busy = false;
+
+async function startFill() {
+  if (busy) return;
+  busy = true;
+
+  const btn = document.getElementById('aiFillBtn');
+  btn.disabled = true;
+  btn.innerHTML = `<div style="width:10px;height:10px;border:1.5px solid #bfdbfe;border-top-color:#2563eb;border-radius:50%;animation:spin 0.65s linear infinite;flex-shrink:0"></div>Generating...`;
+
+  // Clear fields
+  FIELDS.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (el) el.value = '';
+    const b = document.getElementById(f.b);
+    if (b) b.classList.remove('on');
+  });
+  // document.getElementById('revLink').classList.remove('on');
+
+  // Show AI bar
+  const bar = document.getElementById('aiBar');
+  bar.classList.add('on');
+  for (let i = 0; i < 6; i++) document.getElementById('d'+i).classList.remove('done');
+
+  // Animate steps
+  for (let i = 0; i < STEPS.length; i++) {
+    if (i > 0) await pause(600);
+    document.getElementById('aiTxt').textContent = STEPS[i];
+    document.getElementById('d'+i).classList.add('done');
+  }
+  await pause(250);
+  bar.classList.remove('on');
+
+  // Fill fields using their relative delays
+  await Promise.all(FIELDS.map(f => pause(f.delay).then(() => fillField(f))));
+
+  // Done
+  btn.disabled = false;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:12px;height:12px"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/><path d="M5 3l.75 2.25L8 6l-2.25.75L5 9l-.75-2.25L2 6l2.25-.75z" stroke-width="1.5"/></svg>Re-generate`;
+  // document.getElementById('revLink').classList.add('on');
+
+  const toast = document.getElementById('toast');
+  toast.classList.add('on');
+  setTimeout(() => toast.classList.remove('on'), 5000);
+
+  busy = false;
+}
+
+async function fillField(f) {
+  const el = document.getElementById(f.id);
+  const iw = document.getElementById(f.iw);
+  if (!el || !iw) return;
+
+  iw.classList.add('filling');
+  await type(el, f.val, f.textarea ? 6 : 15);
+  iw.classList.remove('filling');
+  iw.classList.add('filled');
+
+  const b = document.getElementById(f.b);
+  if (b) { b.classList.add('on'); setTimeout(() => b.classList.remove('on'), 3000); }
+  setTimeout(() => iw.classList.remove('filled'), 1300);
+}
+
+async function type(el, text, spd) {
+  el.value = '';
+  for (let i = 0; i < text.length; i++) {
+    el.value += text[i];
+    if (i % 2 === 0) await pause(spd);
+  }
+}
+
+function pause(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function toggleOD() {
+  const body = document.getElementById('odBody');
+  const caret = document.getElementById('odCaret');
+  if (body.style.display === 'none') {
+    body.style.display = '';
+    caret.style.transform = '';
+  } else {
+    body.style.display = 'none';
+    caret.style.transform = 'rotate(-90deg)';
+  }
+}
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WIPFLO – Create Template with AI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #2563EB;
+    --blue-light: #EFF6FF;
+    --blue-mid: #DBEAFE;
+    --surface: #FFFFFF;
+    --bg: #F5F6FA;
+    --border: #E5E7EB;
+    --border-mid: #D1D5DB;
+    --text-primary: #111827;
+    --text-secondary: #6B7280;
+    --text-tertiary: #9CA3AF;
+    --green: #16A34A;
+    --green-light: #DCFCE7;
+    --amber: #D97706;
+    --amber-light: #FEF3C7;
+    --red: #DC2626;
+    --red-light: #FEE2E2;
+    --purple: #7C3AED;
+    --purple-light: #EDE9FE;
+    --sidebar-w: 220px;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text-primary); height: 100vh; overflow: hidden; display: flex; }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar { width: var(--sidebar-w); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; }
+  .sidebar-logo { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 9px; }
+  .logo-mark { width: 28px; height: 28px; background: var(--blue); border-radius: 7px; display: flex; align-items: center; justify-content: center; }
+  .logo-mark svg { width: 16px; height: 16px; stroke: white; }
+  .logo-text { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; color: var(--text-primary); }
+  .sidebar-section { padding: 16px 10px 8px; }
+  .sidebar-label { font-size: 10px; font-weight: 600; letter-spacing: 0.8px; color: var(--text-tertiary); text-transform: uppercase; padding: 0 8px 8px; }
+  .nav-item { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: 7px; font-size: 13.5px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all .15s; text-decoration: none; }
+  .nav-item:hover { background: var(--bg); color: var(--text-primary); }
+  .nav-item.active { background: var(--blue-light); color: var(--blue); }
+  .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .nav-badge { margin-left: auto; background: var(--border); color: var(--text-secondary); font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 10px; }
+  .nav-badge.blue { background: var(--blue); color: white; }
+  .sidebar-divider { height: 1px; background: var(--border); margin: 8px 10px; }
+  .sidebar-bottom { margin-top: auto; padding: 12px 10px; border-top: 1px solid var(--border); }
+  .user-row { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: 7px; cursor: pointer; }
+  .user-row:hover { background: var(--bg); }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: white; flex-shrink: 0; }
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 12.5px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role { font-size: 11px; color: var(--text-tertiary); }
+
+  /* ─── MAIN ─── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* TOP NAV */
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-tertiary); }
+  .breadcrumb span { color: var(--text-secondary); }
+  .breadcrumb .current { color: var(--text-primary); font-weight: 600; }
+  .breadcrumb svg { width: 12px; height: 12px; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; font-family: 'DM Sans', sans-serif; }
+  .btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--bg); color: var(--text-primary); }
+  .btn-primary { background: var(--blue); color: white; border: 1px solid var(--blue); }
+  .btn-primary:hover { background: #1D4ED8; }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .btn svg { width: 14px; height: 14px; }
+
+  /* PAGE HEADER */
+  .page-header { padding: 24px 28px 20px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+  .page-title { font-size: 20px; font-weight: 700; letter-spacing: -0.4px; color: var(--text-primary); display: flex; align-items: center; gap: 10px; }
+  .ai-badge { background: linear-gradient(135deg, #2563EB, #7C3AED); color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.5px; }
+  .page-desc { margin-top: 5px; font-size: 13.5px; color: var(--text-secondary); max-width: 580px; line-height: 1.55; }
+
+  /* CONTENT */
+  .content { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+  .content-inner { flex: 1; overflow-y: auto; padding: 24px 28px 100px; display: flex; gap: 20px; }
+
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+  .card-header { padding: 16px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 7px; }
+  .card-title svg { width: 14px; height: 14px; }
+  .card-body { padding: 18px; }
+
+  /* LEFT PANEL */
+  .left-panel { width: 40%; min-width: 340px; display: flex; flex-direction: column; gap: 16px; flex-shrink: 0; }
+
+  /* PROMPT CARD */
+  .prompt-textarea { width: 100%; border: 1.5px solid var(--border); border-radius: 8px; padding: 13px 14px; font-size: 13.5px; font-family: 'DM Sans', sans-serif; color: var(--text-primary); resize: none; outline: none; background: #FAFAFA; transition: border-color .15s, background .15s; line-height: 1.6; }
+  .prompt-textarea:focus { border-color: var(--blue); background: white; box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+  .prompt-textarea::placeholder { color: var(--text-tertiary); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 11px; border: 1px solid var(--border); border-radius: 20px; font-size: 12px; font-weight: 500; color: var(--text-secondary); cursor: pointer; transition: all .15s; background: white; }
+  .chip:hover, .chip.active { background: var(--blue-light); border-color: #BFDBFE; color: var(--blue); }
+  .chip svg { width: 11px; height: 11px; }
+
+  /* FORM CONTROLS */
+  .field-row { display: flex; flex-direction: column; gap: 5px; }
+  .field-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+  .select-field { width: 100%; border: 1px solid var(--border); border-radius: 7px; padding: 8px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text-primary); background: white; outline: none; cursor: pointer; }
+  .select-field:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-info { display: flex; flex-direction: column; gap: 1px; }
+  .toggle-label { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .toggle-desc { font-size: 11.5px; color: var(--text-tertiary); }
+  .toggle { position: relative; width: 36px; height: 20px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: var(--border-mid); border-radius: 20px; cursor: pointer; transition: .2s; }
+  .toggle-slider:before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: .2s; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+  .toggle input:checked + .toggle-slider { background: var(--blue); }
+  .toggle input:checked + .toggle-slider:before { transform: translateX(16px); }
+
+  .gen-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px; border-radius: 8px; background: var(--blue); color: white; font-size: 14px; font-weight: 700; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; transition: all .15s; letter-spacing: -0.1px; }
+  .gen-btn:hover { background: #1D4ED8; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,.25); }
+  .gen-btn svg { width: 16px; height: 16px; }
+
+  /* RIGHT PANEL */
+  .right-panel { flex: 1; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+  /* EMPTY STATE */
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; }
+  .empty-icon { width: 72px; height: 72px; background: var(--blue-light); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
+  .empty-icon svg { width: 32px; height: 32px; color: var(--blue); stroke: var(--blue); }
+  .empty-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 7px; }
+  .empty-sub { font-size: 13px; color: var(--text-tertiary); max-width: 280px; line-height: 1.6; }
+
+  /* AI METRICS BAR */
+  .metrics-bar { display: flex; gap: 12px; }
+  .metric-chip { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 3px; }
+  .metric-label { font-size: 10.5px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; }
+  .metric-value { font-size: 18px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px; }
+  .metric-sub { font-size: 11px; color: var(--text-tertiary); }
+  .metric-chip.blue .metric-value { color: var(--blue); }
+  .metric-chip.green .metric-value { color: var(--green); }
+  .metric-chip.amber .metric-value { color: var(--amber); }
+  .metric-chip.purple .metric-value { color: var(--purple); }
+
+  /* ACCORDION */
+  .acc-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: box-shadow .2s; }
+  .acc-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+  .acc-header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; cursor: pointer; user-select: none; }
+  .acc-drag { color: var(--text-tertiary); cursor: grab; }
+  .acc-drag svg { width: 14px; height: 14px; }
+  .acc-icon-wrap { width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .acc-icon-wrap svg { width: 14px; height: 14px; }
+  .acc-title-wrap { flex: 1; }
+  .acc-title { font-size: 13.5px; font-weight: 700; color: var(--text-primary); }
+  .acc-sub { font-size: 11.5px; color: var(--text-tertiary); margin-top: 1px; }
+  .acc-count { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .acc-chevron { transition: transform .2s; color: var(--text-tertiary); }
+  .acc-chevron svg { width: 15px; height: 15px; }
+  .acc-chevron.open { transform: rotate(180deg); }
+  .acc-body { border-top: 1px solid var(--border); background: #FAFBFC; display: none; }
+  .acc-body.open { display: block; }
+
+  /* PHASE / WORKSTREAM ITEMS */
+  .ws-item { display: flex; align-items: flex-start; gap: 10px; padding: 11px 16px; border-bottom: 1px solid var(--border); }
+  .ws-item:last-child { border-bottom: none; }
+  .ws-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .ws-info { flex: 1; }
+  .ws-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .ws-meta { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }
+  .ws-tags { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; }
+  .ws-tag { font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
+  .ws-edit { opacity: 0; transition: opacity .15s; }
+  .ws-item:hover .ws-edit { opacity: 1; }
+  .ws-edit svg { width: 13px; height: 13px; color: var(--text-tertiary); cursor: pointer; }
+  .ws-edit svg:hover { color: var(--blue); }
+
+  /* RISK */
+  .risk-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .risk-row:last-child { border-bottom: none; }
+  .risk-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .risk-text { font-size: 12.5px; color: var(--text-primary); flex: 1; }
+  .risk-level { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
+
+  /* CONFIDENCE */
+  .conf-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .conf-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #2563EB, #7C3AED); transition: width 1s ease; }
+
+  /* SKELETON */
+  @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+  .skeleton { background: linear-gradient(90deg, #F3F4F6 25%, #E9EAEC 50%, #F3F4F6 75%); background-size: 400px 100%; animation: shimmer 1.4s infinite; border-radius: 5px; }
+
+  /* AI THINKING */
+  @keyframes pulse-dot { 0%,80%,100%{transform:scale(.6);opacity:.4} 40%{transform:scale(1);opacity:1} }
+  .thinking-dots span { display: inline-block; width: 6px; height: 6px; background: var(--blue); border-radius: 50%; margin: 0 2px; animation: pulse-dot 1.2s infinite ease-in-out; }
+  .thinking-dots span:nth-child(2) { animation-delay: .2s; }
+  .thinking-dots span:nth-child(3) { animation-delay: .4s; }
+
+  /* STICKY BAR */
+  .sticky-bar { position: fixed; bottom: 0; left: var(--sidebar-w); right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; z-index: 50; }
+  .sticky-left { display: flex; align-items: center; gap: 12px; }
+  .sticky-right { display: flex; align-items: center; gap: 10px; }
+  .progress-steps { display: flex; align-items: center; gap: 6px; }
+  .step { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700; }
+  .step.done { background: var(--green); color: white; }
+  .step.active { background: var(--blue); color: white; }
+  .step.todo { background: var(--border); color: var(--text-tertiary); }
+  .step-line { width: 24px; height: 1px; background: var(--border); }
+  .step-line.done { background: var(--green); }
+
+  /* TAGS */
+  .tag-green { background: var(--green-light); color: var(--green); }
+  .tag-blue { background: var(--blue-mid); color: var(--blue); }
+  .tag-amber { background: var(--amber-light); color: var(--amber); }
+  .tag-red { background: var(--red-light); color: var(--red); }
+  .tag-purple { background: var(--purple-light); color: var(--purple); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-mid); }
+
+  /* GENERATED STATE */
+  .generated-view { display: none; }
+  .generated-view.visible { display: flex; flex-direction: column; gap: 12px; }
+  .empty-view { display: flex; }
+  .empty-view.hidden { display: none; }
+
+  /* LOADING STATE */
+  .loading-view { display: none; flex-direction: column; gap: 14px; padding: 4px; }
+  .loading-view.visible { display: flex; }
+  .skel-line { height: 13px; }
+  .skel-block { border-radius: 8px; }
+
+  @keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  .fade-in { animation: fadeInUp .3s ease forwards; }
+  .fade-in-delay-1 { animation: fadeInUp .3s ease .1s forwards; opacity: 0; }
+  .fade-in-delay-2 { animation: fadeInUp .3s ease .2s forwards; opacity: 0; }
+  .fade-in-delay-3 { animation: fadeInUp .3s ease .3s forwards; opacity: 0; }
+  .fade-in-delay-4 { animation: fadeInUp .3s ease .4s forwards; opacity: 0; }
+  .fade-in-delay-5 { animation: fadeInUp .3s ease .5s forwards; opacity: 0; }
+
+  .section-divider { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.7px; padding: 2px 0 8px; }
+
+  .inline-edit { outline: none; border-bottom: 1.5px dashed transparent; transition: border-color .15s; padding: 0 2px; border-radius: 2px; }
+  .inline-edit:hover { border-bottom-color: var(--blue); background: var(--blue-light); cursor: text; }
+  .inline-edit:focus { border-bottom-color: var(--blue); background: var(--blue-light); }
+
+  .auto-tag { display: inline-flex; align-items: center; gap: 3px; background: var(--purple-light); color: var(--purple); font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+  .auto-tag svg { width: 9px; height: 9px; }
+</style>
+</head>
+<body>
+
+<!-- ───────────────────────────── SIDEBAR ───────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M2 4h12M2 8h8M2 12h10"/></svg>
+    </div>
+    <span class="logo-text">WIPFLO</span>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Workspace</div>
+    <a class="nav-item" href="#">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="#">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Deliverables
+    </a>
+    <a class="nav-item" href="#">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Team
+    </a>
+  </div>
+
+  <div class="sidebar-divider"></div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Administration</div>
+    <a class="nav-item" href="#">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      Settings
+    </a>
+    <a class="nav-item active" href="#">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      Templates
+      <span class="nav-badge blue">AI</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Analytics
+    </a>
+    <a class="nav-item" href="#">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Permissions
+    </a>
+    <a class="nav-item" href="#">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Notifications
+    </a>
+  </div>
+
+  <div class="sidebar-divider"></div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Integrations</div>
+    <a class="nav-item" href="#">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      API & Webhooks
+    </a>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="user-row">
+      <div class="avatar">JD</div>
+      <div class="user-info">
+        <div class="user-name">Jordan Davis</div>
+        <div class="user-role">Admin</div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="color:var(--text-tertiary)"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+    </div>
+  </div>
+</aside>
+
+<!-- ───────────────────────────── MAIN ───────────────────────────── -->
+<div class="main">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <nav class="breadcrumb">
+      <span>Administration</span>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      <span>Templates</span>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      <span class="current">Generate with AI</span>
+    </nav>
+    <div class="topbar-right">
+      <button class="btn btn-ghost" onclick="resetPage()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Cancel
+      </button>
+      <button class="btn btn-primary" id="acceptBtn" onclick="acceptTemplate()" disabled>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Generate Template
+      </button>
+    </div>
+  </div>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-title">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20" style="color:var(--blue)"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Create Template with AI
+      <span class="ai-badge">✦ AI</span>
+    </div>
+    <p class="page-desc">Describe your workflow and AI will generate phases, workstreams, milestones, deliverables, and dependencies.</p>
+  </div>
+
+  <!-- CONTENT AREA -->
+  <div class="content">
+    <div class="content-inner" id="contentInner">
+
+      <!-- ──── LEFT PANEL ──── -->
+      <div class="left-panel">
+
+        <!-- PROMPT BUILDER -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              AI Prompt
+            </div>
+            <span style="font-size:11px;color:var(--text-tertiary);background:var(--bg);padding:2px 8px;border-radius:4px;border:1px solid var(--border);font-weight:600;">GPT-4o</span>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px;">
+            <textarea id="promptInput" class="prompt-textarea" rows="6" placeholder="e.g. Create an audit workflow template for tax compliance with milestones and quarterly deliverables, including sign-off stages and review checkpoints."></textarea>
+
+            <!-- CHIPS -->
+            <div>
+              <div class="section-divider">Quick Industry Tags</div>
+              <div class="chips" id="chipGroup">
+                <div class="chip" onclick="toggleChip(this,'Tax')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Tax</div>
+                <div class="chip" onclick="toggleChip(this,'Audit')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Audit</div>
+                <div class="chip" onclick="toggleChip(this,'Consulting')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Consulting</div>
+                <div class="chip" onclick="toggleChip(this,'Finance')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Finance</div>
+                <div class="chip" onclick="toggleChip(this,'HR')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>HR</div>
+                <div class="chip" onclick="toggleChip(this,'Analytics')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Analytics</div>
+                <div class="chip" onclick="toggleChip(this,'Legal')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Legal</div>
+                <div class="chip" onclick="toggleChip(this,'IT')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>IT</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI OPTIONS -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+              Generation Options
+            </div>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="field-row">
+                <label class="field-label">Complexity Level</label>
+                <select class="select-field">
+                  <option>Standard</option>
+                  <option selected>Advanced</option>
+                  <option>Expert</option>
+                </select>
+              </div>
+              <div class="field-row">
+                <label class="field-label">Team Size</label>
+                <select class="select-field">
+                  <option>1–5 members</option>
+                  <option selected>6–20 members</option>
+                  <option>21–50 members</option>
+                  <option>50+ members</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">Include Deliverables</div>
+                  <div class="toggle-desc">Auto-generate key deliverables per phase</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">Include Dependencies</div>
+                  <div class="toggle-desc">Map deliverable dependencies automatically</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">Auto-assign Durations</div>
+                  <div class="toggle-desc">Estimate time per work item and phase</div>
+                </div>
+                <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">Risk Analysis</div>
+                  <div class="toggle-desc">Highlight potential bottlenecks and risks</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+
+            <button class="gen-btn" id="genBtn" onclick="generateTemplate()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              Generate Structure
+            </button>
+          </div>
+        </div>
+
+        <!-- PROMPT HISTORY -->
+        <div class="card" style="border-style:dashed;">
+          <div class="card-body" style="display:flex;align-items:center;gap:10px;padding:13px 16px;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="color:var(--text-tertiary)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span style="font-size:12.5px;color:var(--text-tertiary);">Recent: <span style="color:var(--text-secondary);font-weight:500;cursor:pointer;" onclick="loadExample()">"Tax compliance audit with quarterly deliverables…"</span></span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ──── RIGHT PANEL ──── -->
+      <div class="right-panel">
+
+        <!-- EMPTY STATE -->
+        <div class="card empty-view" id="emptyView" style="flex:1;flex-direction:column;">
+          <div class="card-header">
+            <div class="card-title">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              Template Preview
+            </div>
+            <span style="font-size:11.5px;color:var(--text-tertiary);">AI-generated structure</span>
+          </div>
+          <div class="empty-state" style="flex:1;">
+            <div class="empty-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <div class="empty-title">AI Preview will appear here</div>
+            <p class="empty-sub">Enter a workflow description and click "Generate Structure" to see your AI-generated template with phases, work items, and deliverables.</p>
+          </div>
+        </div>
+
+        <!-- LOADING STATE -->
+        <div class="loading-view" id="loadingView">
+          <div class="card" style="padding:20px 18px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+              <div style="width:32px;height:32px;border-radius:8px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" width="15" height="15"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              </div>
+              <div>
+                <div style="font-size:13.5px;font-weight:700;color:var(--text-primary);">AI is building your template</div>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+                  <span style="font-size:12px;color:var(--text-tertiary);">Analyzing workflow structure</span>
+                  <div class="thinking-dots"><span></span><span></span><span></span></div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div class="skeleton skel-line" style="width:85%;"></div>
+              <div class="skeleton skel-line" style="width:70%;"></div>
+              <div class="skeleton skel-line" style="width:90%;"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;">
+            <div class="skeleton skel-block" style="flex:1;height:80px;"></div>
+            <div class="skeleton skel-block" style="flex:1;height:80px;"></div>
+            <div class="skeleton skel-block" style="flex:1;height:80px;"></div>
+            <div class="skeleton skel-block" style="flex:1;height:80px;"></div>
+          </div>
+          <div class="skeleton skel-block" style="height:200px;"></div>
+          <div class="skeleton skel-block" style="height:160px;"></div>
+          <div class="skeleton skel-block" style="height:140px;"></div>
+        </div>
+
+        <!-- GENERATED VIEW -->
+        <div class="generated-view" id="generatedView">
+
+          <!-- AI METRICS -->
+          <div class="metrics-bar fade-in">
+            <div class="metric-chip blue">
+              <div class="metric-label">AI Confidence</div>
+              <div class="metric-value">94%</div>
+              <div class="metric-sub">High accuracy</div>
+            </div>
+            <div class="metric-chip green">
+              <div class="metric-label">Est. Duration</div>
+              <div class="metric-value">18w</div>
+              <div class="metric-sub">18 weeks total</div>
+            </div>
+            <div class="metric-chip amber">
+              <div class="metric-label">Team Size</div>
+              <div class="metric-value">8–12</div>
+              <div class="metric-sub">Recommended</div>
+            </div>
+            <div class="metric-chip purple">
+              <div class="metric-label">Automations</div>
+              <div class="metric-value">6</div>
+              <div class="metric-sub">Opportunities</div>
+            </div>
+          </div>
+
+          <!-- CONFIDENCE BAR -->
+          <div class="card fade-in-delay-1">
+            <div class="card-body" style="padding:14px 18px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <div style="font-size:12px;font-weight:700;color:var(--text-secondary);">AI Confidence Score</div>
+                <div style="font-size:12px;font-weight:700;color:var(--blue);">94 / 100</div>
+              </div>
+              <div class="conf-bar"><div class="conf-fill" id="confFill" style="width:0%;"></div></div>
+              <div style="display:flex;gap:16px;margin-top:10px;">
+                <div style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--green);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>Structure clarity</div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--green);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>Industry alignment</div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--amber);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Timeline estimate</div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--green);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>Dependency mapping</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PHASE ACCORDION -->
+          <div class="acc-item fade-in-delay-2" id="acc-phases">
+            <div class="acc-header" onclick="toggleAcc('acc-phases')">
+              <div class="acc-icon-wrap" style="background:#DBEAFE;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              </div>
+              <div class="acc-title-wrap">
+                <div class="acc-title">Phases</div>
+                <div class="acc-sub">Project lifecycle phases</div>
+              </div>
+              <span class="acc-count tag-blue">4 phases</span>
+              <div class="acc-chevron open" id="chevron-acc-phases"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+            </div>
+            <div class="acc-body open" id="body-acc-phases">
+              <div class="ws-item">
+                <div class="ws-dot" style="background:#2563EB;margin-top:6px;"></div>
+                <div class="ws-info">
+                  <div class="ws-name"><span class="inline-edit" contenteditable="true">Phase 1: Planning & Scoping</span></div>
+                  <div class="ws-meta">Weeks 1–3 · 3 workstreams · 8 deliverables</div>
+                  <div class="ws-tags">
+                    <span class="ws-tag tag-blue">Initiation</span>
+                    <span class="ws-tag tag-green">On Track</span>
+                    <span class="auto-tag"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg>AI Suggested</span>
+                  </div>
+                </div>
+                <div class="ws-edit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+              </div>
+              <div class="ws-item">
+                <div class="ws-dot" style="background:#7C3AED;margin-top:6px;"></div>
+                <div class="ws-info">
+                  <div class="ws-name"><span class="inline-edit" contenteditable="true">Phase 2: Fieldwork & Evidence Collection</span></div>
+                  <div class="ws-meta">Weeks 4–10 · 5 workstreams · 14 deliverables</div>
+                  <div class="ws-tags"><span class="ws-tag tag-purple">Core</span><span class="ws-tag tag-amber">At Risk</span></div>
+                </div>
+                <div class="ws-edit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+              </div>
+              <div class="ws-item">
+                <div class="ws-dot" style="background:#16A34A;margin-top:6px;"></div>
+                <div class="ws-info">
+                  <div class="ws-name"><span class="inline-edit" contenteditable="true">Phase 3: Review & Analysis</span></div>
+                  <div class="ws-meta">Weeks 11–15 · 3 workstreams · 9 deliverables</div>
+                  <div class="ws-tags"><span class="ws-tag tag-green">Review</span></div>
+                </div>
+                <div class="ws-edit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+              </div>
+              <div class="ws-item">
+                <div class="ws-dot" style="background:#D97706;margin-top:6px;"></div>
+                <div class="ws-info">
+                  <div class="ws-name"><span class="inline-edit" contenteditable="true">Phase 4: Reporting & Sign-off</span></div>
+                  <div class="ws-meta">Weeks 16–18 · 2 workstreams · 6 deliverables</div>
+                  <div class="ws-tags"><span class="ws-tag tag-amber">Final</span></div>
+                </div>
+                <div class="ws-edit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- WORKSTREAMS ACCORDION -->
+          <div class="acc-item fade-in-delay-3" id="acc-ws">
+            <div class="acc-header" onclick="toggleAcc('acc-ws')">
+              <div class="acc-icon-wrap" style="background:#EDE9FE;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              </div>
+              <div class="acc-title-wrap">
+                <div class="acc-title">Works items</div>
+                <div class="acc-sub">Parallel work tracks across phases</div>
+              </div>
+              <span class="acc-count tag-purple">13 total</span>
+              <div class="acc-chevron" id="chevron-acc-ws"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+            </div>
+            <div class="acc-body" id="body-acc-ws">
+              <div class="ws-item">
+                <div class="ws-dot" style="background:#2563EB;margin-top:6px;"></div>
+                <div class="ws-info">
+                  <div class="ws-name"><span class="inline-edit" contenteditable="true">Tax Compliance Review</span></div>
+                  <div class="ws-meta">Phase 1–2 · 4 deliverables · Owner: Tax Lead</div>
+                  <div class="ws-tags"><span class="ws-tag tag-blue">Regulatory</span><span class="auto-tag"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg>AI</span></div>
+                </div>
+                <div class="ws-edit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+              </div>
+              <div class="ws-item">
+                <div class="ws-dot" style="background:#7C3AED;margin-top:6px;"></div>
+                <div class="ws-info">
+                  <div class="ws-name"><span class="inline-edit" contenteditable="true">Internal Controls Assessment</span></div>
+                  <div class="ws-meta">Phase 2 · 6 deliverables · Owner: Controls Team</div>
+                  <div class="ws-tags"><span class="ws-tag tag-purple">Controls</span></div>
+                </div>
+                <div class="ws-edit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+              </div>
+              <div class="ws-item">
+                <div class="ws-dot" style="background:#16A34A;margin-top:6px;"></div>
+                <div class="ws-info">
+                  <div class="ws-name"><span class="inline-edit" contenteditable="true">Document & Evidence Management</span></div>
+                  <div class="ws-meta">Phase 1–3 · 8 deliverables · Owner: Audit Lead</div>
+                  <div class="ws-tags"><span class="ws-tag tag-green">Documentation</span></div>
+                </div>
+                <div class="ws-edit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+              </div>
+              <div style="padding:10px 16px;border-top:1px solid var(--border);">
+                <button style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--blue);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  View all 13 workstreams
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Deliverables ACCORDION -->
+          <div class="acc-item fade-in-delay-4" id="acc-ms">
+            <div class="acc-header" onclick="toggleAcc('acc-ms')">
+              <div class="acc-icon-wrap" style="background:var(--amber-light);">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="acc-title-wrap">
+                <div class="acc-title">Deliverables</div>
+                <div class="acc-sub">Key checkpoints and deadlines</div>
+              </div>
+              <span class="acc-count tag-amber">7 deliverables</span>
+              <div class="acc-chevron" id="chevron-acc-ms"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+            </div>
+            <div class="acc-body" id="body-acc-ms">
+              <div class="ws-item">
+                <div class="ws-dot" style="background:#D97706;margin-top:6px;"></div>
+                <div class="ws-info">
+                  <div class="ws-name"><span class="inline-edit" contenteditable="true">Kick-off & Scope Sign-off</span></div>
+                  <div class="ws-meta">End of Week 2 · All stakeholders</div>
+                  <div class="ws-tags"><span class="ws-tag tag-amber">M1</span><span class="ws-tag tag-green">Mandatory</span></div>
+                </div>
+                <div class="ws-edit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+              </div>
+              <div class="ws-item">
+                <div class="ws-dot" style="background:#D97706;margin-top:6px;"></div>
+                <div class="ws-info">
+                  <div class="ws-name"><span class="inline-edit" contenteditable="true">Q1 Interim Findings Report</span></div>
+                  <div class="ws-meta">End of Week 6 · Tax & Audit leads</div>
+                  <div class="ws-tags"><span class="ws-tag tag-amber">M2</span><span class="ws-tag tag-blue">Quarterly</span></div>
+                </div>
+                <div class="ws-edit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+              </div>
+              <div class="ws-item">
+                <div class="ws-dot" style="background:#D97706;margin-top:6px;"></div>
+                <div class="ws-info">
+                  <div class="ws-name"><span class="inline-edit" contenteditable="true">Final Audit Report & Executive Sign-off</span></div>
+                  <div class="ws-meta">End of Week 18 · Board level</div>
+                  <div class="ws-tags"><span class="ws-tag tag-amber">M7</span><span class="ws-tag tag-red">Critical</span></div>
+                </div>
+                <div class="ws-edit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RISK & AUTOMATION ROW -->
+          <div style="display:flex;gap:12px;" class="fade-in-delay-5">
+            <!-- RISKS -->
+            <div class="card" style="flex:1;">
+              <div class="card-header">
+                <div class="card-title" style="color:var(--red);">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  Risk Indicators
+                </div>
+              </div>
+              <div class="card-body" style="padding:12px 16px;">
+                <div class="risk-row">
+                  <div class="risk-dot" style="background:var(--red);"></div>
+                  <div class="risk-text">Evidence collection bottleneck (Wk 5–7)</div>
+                  <span class="risk-level tag-red">High</span>
+                </div>
+                <div class="risk-row">
+                  <div class="risk-dot" style="background:var(--amber);"></div>
+                  <div class="risk-text">Stakeholder availability during sign-off</div>
+                  <span class="risk-level tag-amber">Med</span>
+                </div>
+                <div class="risk-row">
+                  <div class="risk-dot" style="background:var(--amber);"></div>
+                  <div class="risk-text">Cross-team dependency on Q1 deliverables</div>
+                  <span class="risk-level tag-amber">Med</span>
+                </div>
+                <div class="risk-row">
+                  <div class="risk-dot" style="background:var(--green);"></div>
+                  <div class="risk-text">Documentation workflow well-defined</div>
+                  <span class="risk-level tag-green">Low</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- AUTOMATION -->
+            <div class="card" style="flex:1;">
+              <div class="card-header">
+                <div class="card-title" style="color:var(--purple);">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                  Automation Opportunities
+                </div>
+              </div>
+              <div class="card-body" style="padding:12px 16px;display:flex;flex-direction:column;gap:7px;">
+                <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--purple-light);border-radius:6px;font-size:12px;color:var(--purple);font-weight:500;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Evidence request auto-routing
+                </div>
+                <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--purple-light);border-radius:6px;font-size:12px;color:var(--purple);font-weight:500;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Milestone deadline reminders
+                </div>
+                <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--purple-light);border-radius:6px;font-size:12px;color:var(--purple);font-weight:500;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Stakeholder sign-off workflows
+                </div>
+                <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--purple-light);border-radius:6px;font-size:12px;color:var(--purple);font-weight:500;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Report generation from template
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- END GENERATED VIEW -->
+
+      </div>
+      <!-- END RIGHT PANEL -->
+
+    </div>
+    <!-- END CONTENT INNER -->
+  </div>
+  <!-- END CONTENT -->
+
+</div>
+<!-- END MAIN -->
+
+<!-- STICKY REVIEW BAR -->
+<div class="sticky-bar" id="stickyBar" style="display:none;">
+  <div class="sticky-left">
+    <div class="progress-steps">
+      <div class="step done">✓</div>
+      <div class="step-line done"></div>
+      <div class="step active">2</div>
+      <div class="step-line"></div>
+      <div class="step todo">3</div>
+    </div>
+    <div style="font-size:12.5px;color:var(--text-secondary);">
+      <span style="font-weight:700;color:var(--text-primary);">Tax Compliance Audit Template</span>
+      <span style="margin:0 6px;color:var(--border-mid);">·</span>4 phases · 13 work items · 7 deliverables
+    </div>
+  </div>
+  <div class="sticky-right">
+    <button class="btn btn-ghost" onclick="editPrompt()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit Prompt
+    </button>
+    <button class="btn btn-ghost" onclick="generateTemplate()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+      Regenerate
+    </button>
+    <button class="btn btn-primary" onclick="acceptTemplate()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      Accept & Continue
+    </button>
+  </div>
+</div>
+
+<script>
+  // ─── Toggle chip ───
+  function toggleChip(el, label) {
+    el.classList.toggle('active');
+    const ta = document.getElementById('promptInput');
+    if (el.classList.contains('active')) {
+      if (!ta.value.toLowerCase().includes(label.toLowerCase())) {
+        if (ta.value && !ta.value.endsWith(' ')) ta.value += ' ';
+        ta.value += label + ' ';
+      }
+    }
+  }
+
+  // ─── Toggle accordion ───
+  function toggleAcc(id) {
+    const body = document.getElementById('body-' + id);
+    const chevron = document.getElementById('chevron-' + id);
+    body.classList.toggle('open');
+    chevron.classList.toggle('open');
+  }
+
+  // ─── Load example ───
+  function loadExample() {
+    document.getElementById('promptInput').value = 'Create a tax compliance audit workflow with quarterly deliverables, evidence collection work items, internal controls assessment, and a final sign-off phase with stakeholder approvals.';
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    ['Tax','Audit','Finance'].forEach(t => {
+      document.querySelectorAll('.chip').forEach(c => { if (c.textContent.trim() === t) c.classList.add('active'); });
+    });
+  }
+
+  // ─── Generate template ───
+  let generated = false;
+  function generateTemplate() {
+    if (!generated) generated = false;
+
+    // Show loading
+    document.getElementById('emptyView').classList.add('hidden');
+    document.getElementById('generatedView').classList.remove('visible');
+    document.getElementById('loadingView').classList.add('visible');
+    document.getElementById('stickyBar').style.display = 'none';
+    document.getElementById('genBtn').disabled = true;
+    document.getElementById('genBtn').innerHTML = `<div class="thinking-dots"><span></span><span></span><span></span></div> Generating…`;
+    document.getElementById('acceptBtn').disabled = true;
+
+    setTimeout(() => {
+      document.getElementById('loadingView').classList.remove('visible');
+      document.getElementById('generatedView').classList.add('visible');
+      document.getElementById('stickyBar').style.display = 'flex';
+      document.getElementById('genBtn').disabled = false;
+      document.getElementById('genBtn').innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg> Regenerate`;
+      document.getElementById('acceptBtn').disabled = false;
+      document.getElementById('acceptBtn').textContent = '✓ Accept & Save';
+      // Animate confidence bar
+      setTimeout(() => {
+        document.getElementById('confFill').style.width = '94%';
+      }, 400);
+      generated = true;
+    }, 2800);
+  }
+
+  // ─── Accept template ───
+  function acceptTemplate() {
+    if (!generated) return;
+    const btn = document.getElementById('acceptBtn');
+    btn.textContent = '✓ Saved!';
+    btn.style.background = 'var(--green)';
+    setTimeout(() => {
+      btn.textContent = '✓ Accept & Save';
+      btn.style.background = '';
+    }, 2000);
+  }
+
+  // ─── Edit prompt ───
+  function editPrompt() {
+    document.getElementById('promptInput').focus();
+    document.getElementById('promptInput').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ─── Reset page ───
+  function resetPage() {
+    document.getElementById('emptyView').classList.remove('hidden');
+    document.getElementById('generatedView').classList.remove('visible');
+    document.getElementById('loadingView').classList.remove('visible');
+    document.getElementById('stickyBar').style.display = 'none';
+    document.getElementById('genBtn').disabled = false;
+    document.getElementById('genBtn').innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Generate Structure`;
+    document.getElementById('acceptBtn').disabled = true;
+    document.getElementById('acceptBtn').textContent = 'Generate Template';
+    document.getElementById('confFill').style.width = '0%';
+    generated = false;
+  }
+
+  // ─── Init lucide icons ───
+  lucide.createIcons();
+</script>
+</body>
+</html>
