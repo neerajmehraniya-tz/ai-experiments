@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wipflo — Focus · Work Items</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== DESIGN TOKENS (from Figma) ===== */
+:root {
+  --font: 'Montserrat', sans-serif;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #edf5fc;
+  --bg-table-header: #e6e8eb;
+  --border-primary: #e6e8eb;
+  --border-secondary: #969da3;
+  --border-tertiary-light: #dae9f7;
+  --content-primary: #181919;
+  --content-secondary: #63666a;
+  --content-tertiary: #0050ff;
+  --content-quaternary: #f8fafc;
+  --btn-secondary-default: #edf5fc;
+  --btn-secondary-hover: #edf5fc;
+  --btn-secondary-border: #e6e8eb;
+  --btn-secondary-border-active: #dae9f7;
+  --btn-secondary-text: #63666a;
+  --btn-secondary-text-active: #0050ff;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-round: 100000px;
+  --count-total-bg: #0050ff;
+  --count-total-text: #f8fafc;
+  --count-waiting-bg: #ffb703;
+  --count-waiting-text: #181919;
+  --count-not-started-bg: #a9b0b8;
+  --count-not-started-text: #181919;
+  --count-working-bg: #00bdff;
+  --count-working-text: #181919;
+  --count-review-bg: #ad00ff;
+  --count-review-text: #f8fafc;
+  --count-rework-bg: #a33c00;
+  --count-rework-text: #f8fafc;
+  --count-snooze-bg: #ff5017;
+  --count-snooze-text: #181919;
+  --avatar-bg: #edf5fc;
+  --avatar-content: #0078a3;
+  --avatar-bg-working: #fef9d9;
+  --avatar-border-working: #ffb703;
+  --content-warning-dark: #a36f00;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: var(--font); background: var(--bg-primary); color: var(--content-primary); font-size: 14px; line-height: 18px; display: flex; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c8cdd2; border-radius: 4px; }
+button { font-family: var(--font); cursor: pointer; border: none; background: none; }
+input { font-family: var(--font); }
+
+/* ===== SIDEBAR (280px, exact Figma) ===== */
+.sidebar {
+  width: 280px; min-width: 280px; height: 100vh;
+  background: var(--bg-primary);
+  border-right: 1px solid var(--border-primary);
+  display: flex; flex-direction: column;
+  position: relative; z-index: 20;
+  flex-shrink: 0;
+  transition: width 0.3s ease;
+}
+
+/* Logo area */
+.sidebar-logo {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24px 16px;
+}
+.wipflo-logo { display: flex; align-items: center; gap: 8px; }
+.wipflo-logo-icon {
+  width: 48px; height: 44px;
+  background: url('https://www.figma.com/api/mcp/asset/27cf24d8-8b24-4cc7-ab8e-cb3655160468') center/contain no-repeat;
+}
+.wipflo-logo-name {
+  height: 18px; width: 72px;
+  background: url('https://www.figma.com/api/mcp/asset/9fe4ba13-a4ce-4657-a025-55f603a89e13') center/contain no-repeat;
+}
+.sidebar-collapse-btn {
+  width: 42px; height: 42px; border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--content-secondary);
+  transition: background 0.15s;
+}
+.sidebar-collapse-btn:hover { background: var(--bg-secondary); }
+
+/* Nav items */
+.sidebar-nav { padding: 0 16px; display: flex; flex-direction: column; gap: 8px; }
+.nav-item {
+  display: flex; align-items: center; gap: 8px;
+  min-height: 40px; padding: 8px 12px; border-radius: var(--radius-md);
+  cursor: pointer; font-size: 14px; font-weight: 600;
+  color: var(--content-secondary);
+  transition: background 0.12s, color 0.12s;
+  position: relative;
+}
+.nav-item:hover { background: var(--bg-secondary); }
+.nav-item.active {
+  background: var(--btn-secondary-default);
+  color: var(--content-primary);
+}
+.nav-item .nav-icon { width: 16px; height: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.nav-item .nav-label { flex: 1; min-width: 0; }
+.nav-count {
+  border: 1px solid var(--border-primary); border-radius: var(--radius-round);
+  min-width: 24px; padding: 3px 6px; font-size: 14px; font-weight: 600;
+  color: var(--content-primary); text-align: center;
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-count.working {
+  background: var(--avatar-bg-working);
+  border: 1px dashed var(--avatar-border-working);
+  color: var(--content-warning-dark);
+}
+.nav-caret { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* Filler */
+.sidebar-filler { flex: 1; }
+
+/* Mini Dashboard */
+.sidebar-mini { padding: 0 16px; display: flex; flex-direction: column; gap: 8px; }
+.help-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-tertiary-light);
+  border-radius: var(--radius-sm); padding: 12px;
+  display: flex; flex-direction: column; gap: 8px; align-items: center;
+}
+.help-icon { width: 32px; height: 32px; }
+.help-text { font-size: 12px; font-weight: 500; color: var(--content-secondary); text-align: center; line-height: 16px; }
+.help-link { font-size: 12px; font-weight: 600; color: var(--btn-secondary-text-active); text-decoration: none; }
+.help-link:hover { text-decoration: underline; }
+
+.mini-dash-card {
+  background: var(--bg-secondary); border-radius: 8px; padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.mini-dash-title { font-size: 12px; font-weight: 500; color: var(--content-secondary); }
+.mini-dash-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 0; font-size: 14px; font-weight: 600; color: var(--content-primary);
+}
+
+/* User footer */
+.sidebar-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px 24px;
+}
+.user-info { display: flex; align-items: center; gap: 8px; flex: 1; }
+.user-avatar {
+  width: 28px; height: 28px; border-radius: var(--radius-round);
+  background: var(--avatar-bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: var(--avatar-content);
+  flex-shrink: 0;
+}
+.user-name { font-size: 14px; font-weight: 600; color: var(--content-primary); line-height: 18px; }
+.user-role { font-size: 12px; font-weight: 500; color: var(--content-secondary); }
+.settings-btn { width: 42px; height: 42px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.12s; }
+.settings-btn:hover { background: var(--bg-secondary); }
+
+/* ===== MAIN CONTENT ===== */
+.main { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; min-width: 0; }
+
+/* Body */
+.body-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Page header */
+.page-header {
+  padding: 24px 24px 8px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.page-header-top {
+  display: flex; align-items: center; gap: 12px;
+}
+.page-title { font-size: 20px; font-weight: 600; color: var(--content-primary); line-height: 28px; white-space: nowrap; }
+.binary-tab {
+  border: 1px solid var(--btn-secondary-border);
+  border-radius: var(--radius-sm);
+  display: flex; overflow: hidden;
+  width: 207px; flex-shrink: 0;
+}
+.binary-tab-item {
+  flex: 1; padding: 8px; text-align: center;
+  font-size: 14px; font-weight: 500; color: var(--btn-secondary-text);
+  cursor: pointer; transition: all 0.12s;
+}
+.binary-tab-item.active {
+  background: var(--btn-secondary-hover);
+  border: 1px solid var(--btn-secondary-border-active);
+  color: var(--btn-secondary-text-active);
+  border-radius: var(--radius-sm);
+  margin: -1px;
+}
+.page-header-filler { flex: 1; }
+.page-actions { display: flex; align-items: center; gap: 12px; }
+
+/* Buttons */
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--btn-secondary-border);
+  border-radius: var(--radius-sm);
+  padding: 8px; font-size: 14px; font-weight: 600;
+  color: var(--btn-secondary-text);
+  background: var(--bg-primary);
+  min-width: 80px; justify-content: center;
+  transition: background 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+.btn-secondary:hover { background: var(--bg-secondary); border-color: #c8cdd2; }
+.search-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--btn-secondary-border); border-radius: var(--radius-sm);
+  padding: 8px; font-size: 14px; font-weight: 600;
+  color: var(--btn-secondary-text); background: var(--bg-primary);
+  transition: background 0.12s;
+}
+.search-btn:hover { background: var(--bg-secondary); }
+
+/* Quick filters */
+.quick-filters {
+  display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+  padding: 0 24px;
+}
+.qf-label { font-size: 12px; font-weight: 600; color: var(--content-secondary); padding-right: 4px; white-space: nowrap; }
+.qf-tab {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 8px 12px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 500; color: var(--btn-secondary-text-active);
+  cursor: pointer; transition: background 0.12s; white-space: nowrap;
+}
+.qf-tab:hover { background: var(--bg-tertiary); }
+.qf-tab.active { background: var(--btn-secondary-text-active); color: var(--content-quaternary); }
+
+/* Status tabs (tertiary) */
+.tertiary-tabs-wrap { padding: 0 24px; }
+.tertiary-tabs {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  display: flex; gap: 8px; padding: 4px;
+}
+.t-tab {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 4px 8px 4px 8px; border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 14px; font-weight: 600; color: var(--content-secondary);
+  transition: background 0.12s;
+}
+.t-tab:hover { background: var(--bg-secondary); }
+.t-tab.active { background: var(--btn-secondary-default); color: var(--content-primary); }
+.t-badge {
+  display: flex; align-items: center; justify-content: center;
+  min-width: 24px; padding: 4px 6px; border-radius: var(--radius-round);
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+
+/* Table */
+.table-wrap { flex: 1; overflow-y: auto; overflow-x: auto; }
+.wi-table { width: 100%; border-collapse: collapse; }
+.wi-table thead th {
+  background: var(--bg-table-header); padding: 8px;
+  font-size: 12px; font-weight: 600; color: var(--content-primary);
+  text-align: left; white-space: nowrap; border-bottom: 1px solid var(--border-primary);
+  position: sticky; top: 0; z-index: 2;
+  vertical-align: middle;
+}
+.wi-table thead th:first-child { padding-left: 16px; }
+.th-inner { display: flex; align-items: center; gap: 4px; }
+.sort-icon { width: 12px; height: 12px; opacity: 0.5; }
+.wi-table tbody td {
+  padding: 12px 8px; font-size: 12px; font-weight: 500;
+  color: var(--content-primary); border-bottom: 1px solid var(--border-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;
+  vertical-align: middle;
+}
+.wi-table tbody td:first-child { padding-left: 16px; }
+.wi-table tbody tr { cursor: pointer; transition: background 0.1s; }
+.wi-table tbody tr:hover { background: var(--bg-secondary); }
+.wi-table tbody tr.snoozed td { opacity: 0.5; }
+
+/* Checkbox col */
+.wi-table .col-check { width: 52px; }
+.wi-table .col-expand { width: 20px; }
+.wi-table .col-name { width: 270px; }
+.wi-table .col-client { width: 270px; }
+.wi-table .col-workstream { width: 270px; }
+.wi-table .col-type { width: 120px; }
+.wi-table .col-assignee { width: 110px; }
+.wi-table .col-status { width: 106px; }
+.wi-table .col-due { width: 120px; }
+.wi-table .col-priority { width: 100px; }
+.wi-table .col-budget { width: 89px; }
+.wi-table .col-actions { width: 112px; }
+
+/* Status badges */
+.status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 8px; border-radius: var(--radius-round);
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.status-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.s-waiting { background: #fff8e6; color: #a36f00; }
+.s-waiting::before { background: #ffb703; }
+.s-working { background: #e6faff; color: #006b8f; }
+.s-working::before { background: #00bdff; }
+.s-review { background: #f5e6ff; color: #6b00a3; }
+.s-review::before { background: #ad00ff; }
+.s-rework { background: #fde8de; color: #6b2000; }
+.s-rework::before { background: #a33c00; }
+.s-snooze { background: #fde8de; color: #8a2a08; }
+.s-snooze::before { background: #ff5017; }
+.s-not-started { background: #f0f1f2; color: #555a60; }
+.s-not-started::before { background: #a9b0b8; }
+
+/* Assignee avatars */
+.assignee-group { display: flex; }
+.a-avatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  font-size: 9px; font-weight: 700; color: white;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid white; margin-left: -6px; flex-shrink: 0;
+}
+.a-avatar:first-child { margin-left: 0; }
+
+/* ===== FLO FLOATING BUTTON ===== */
+#floBtn {
+  position: fixed; bottom: 24px; right: 24px; z-index: 500;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb 0%, #1a42c8 100%);
+  box-shadow: 0 4px 16px rgba(37,99,235,0.45), 0 1px 4px rgba(0,0,0,0.12);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border: none;
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
+  animation: floPulse 3s ease-in-out infinite;
+}
+#floBtn:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(37,99,235,0.55); }
+#floBtn.hidden { transform: scale(0) !important; opacity: 0; pointer-events: none; }
+@keyframes floPulse {
+  0%,100% { box-shadow: 0 4px 16px rgba(37,99,235,0.45), 0 0 0 0 rgba(37,99,235,0.25); }
+  50% { box-shadow: 0 4px 16px rgba(37,99,235,0.45), 0 0 0 9px rgba(37,99,235,0); }
+}
+.flo-tooltip {
+  position: absolute; bottom: 62px; right: 0;
+  background: #181919; color: #f8fafc; font-size: 12px; font-weight: 600;
+  padding: 5px 10px; border-radius: 7px; white-space: nowrap;
+  opacity: 0; pointer-events: none; transition: opacity 0.15s;
+  font-family: var(--font);
+}
+.flo-tooltip::after {
+  content: ''; position: absolute; top: 100%; right: 20px;
+  border: 5px solid transparent; border-top-color: #181919;
+}
+#floBtn:hover .flo-tooltip { opacity: 1; }
+
+/* ===== FLO PANEL ===== */
+#floPanel {
+  position: fixed; bottom: 88px; right: 24px; z-index: 600;
+  width: 420px; height: 624px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.13), 0 4px 20px rgba(0,0,0,0.07);
+  display: flex; flex-direction: column; overflow: hidden;
+  opacity: 0; transform: translateY(16px) scale(0.97);
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  transform-origin: bottom right;
+}
+#floPanel.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+
+/* Sidebar-docked mode */
+#floPanel.docked {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 380px; height: 100vh !important; max-height: none;
+  border-radius: 0; border-top: none; border-bottom: none; border-right: none;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  opacity: 1; pointer-events: none;
+}
+#floPanel.docked.open { transform: translateX(0); pointer-events: all; }
+
+/* Panel header */
+.panel-header {
+  padding: 14px 14px 13px;
+  border-bottom: 1px solid #f5f5f4;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.flo-avatar-sm {
+  width: 32px; height: 32px; border-radius: 10px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.panel-name { font-size: 14px; font-weight: 700; color: var(--content-primary); line-height: 1; }
+.panel-status { font-size: 11px; color: #16a34a; font-weight: 500; display: flex; align-items: center; gap: 3px; margin-top: 2px; }
+.panel-status-dot { width: 5px; height: 5px; background: #16a34a; border-radius: 50%; }
+.ph-icon-btn {
+  width: 30px; height: 30px; border-radius: 7px; border: none;
+  background: transparent; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #78716c; transition: all 0.12s;
+}
+.ph-icon-btn:hover { background: #f5f5f4; color: var(--content-primary); }
+.ph-icon-btn.active { background: #eff6ff; color: #2563eb; }
+
+/* Panel body */
+.panel-body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.panel-body::-webkit-scrollbar { width: 3px; }
+
+/* Input */
+.panel-input { padding: 10px 13px 12px; border-top: 1px solid #f0f0f0; background: white; flex-shrink: 0; }
+.input-wrap {
+  display: flex; align-items: flex-end; gap: 8px;
+  background: #fafaf9; border: 1px solid #e7e5e0; border-radius: 12px;
+  padding: 8px 10px; transition: all 0.15s;
+}
+.input-wrap:focus-within { border-color: #93c5fd; background: white; box-shadow: 0 0 0 3px rgba(59,130,246,0.09); }
+.chat-ta {
+  flex: 1; border: none; outline: none; resize: none; background: transparent;
+  font-size: 13px; font-family: var(--font); color: var(--content-primary);
+  min-height: 20px; max-height: 100px; line-height: 1.5;
+}
+.chat-ta::placeholder { color: #a8a29e; }
+.send-btn {
+  width: 28px; height: 28px; border-radius: 7px; background: #1e40af;
+  display: flex; align-items: center; justify-content: center;
+  color: white; flex-shrink: 0; transition: background 0.12s, transform 0.12s;
+}
+.send-btn:hover { background: #1d3a8a; transform: scale(1.05); }
+.attach-btn { background: none; border: none; cursor: pointer; color: #a8a29e; display: flex; align-items: center; padding: 2px; transition: color 0.12s; }
+.attach-btn:hover { color: #63666a; }
+.input-hint { font-size: 10.5px; color: #a8a29e; text-align: center; margin-top: 6px; font-family: var(--font); }
+
+/* Chat bubbles */
+.msg-ai { display: flex; gap: 8px; align-items: flex-start; }
+.msg-ai .flo-bbl {
+  background: #f5f5f4; border-radius: 4px 13px 13px 13px;
+  padding: 10px 12px; font-size: 13px; line-height: 1.55; color: var(--content-primary);
+  max-width: calc(100% - 42px);
+}
+.msg-user { display: flex; justify-content: flex-end; }
+.msg-user .user-bbl {
+  background: #1e40af; color: white;
+  border-radius: 13px 13px 4px 13px;
+  padding: 9px 12px; font-size: 13px; line-height: 1.55; max-width: 80%;
+}
+.msg-flo-sm {
+  width: 25px; height: 25px; border-radius: 8px; flex-shrink: 0; margin-top: 2px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* AI response card */
+.ai-card { background: white; border: 1px solid #e7e5e0; border-radius: 10px; padding: 11px; margin-top: 7px; }
+.ai-card-hd { font-size: 10.5px; font-weight: 700; color: #a8a29e; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 7px; }
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.stat-box { background: #fafaf9; border: 1px solid #e7e5e0; border-radius: 8px; padding: 9px 11px; }
+.stat-val { font-size: 20px; font-weight: 700; color: var(--content-primary); line-height: 1; }
+.stat-lbl { font-size: 10.5px; color: #78716c; margin-top: 2px; font-weight: 500; }
+.stat-trend { font-size: 10px; font-weight: 600; margin-top: 3px; }
+.up { color: #16a34a; } .dn { color: #dc2626; }
+
+/* Chat mini table */
+.c-tbl { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-top: 7px; }
+.c-tbl th { text-align: left; padding: 4px 7px; background: #fafaf9; border-bottom: 1px solid #e7e5e0; font-weight: 600; color: #78716c; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; }
+.c-tbl td { padding: 6.5px 7px; border-bottom: 1px solid #f5f5f4; color: #44403c; }
+.c-tbl tr:last-child td { border-bottom: none; }
+.c-tbl tr:hover td { background: #fafaf9; }
+
+/* Tiny pill */
+.tpill { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+.tp-w { background: #fef3c7; color: #92400e; }
+.tp-p { background: #dbeafe; color: #1e40af; }
+.tp-r { background: #f3e8ff; color: #6d28d9; }
+.tp-d { background: #d1fae5; color: #065f46; }
+.tp-x { background: #fee2e2; color: #991b1b; }
+
+/* Feedback row */
+.fb-row { display: flex; align-items: center; gap: 5px; margin-top: 6px; padding-top: 6px; border-top: 1px solid #f5f5f4; }
+.fb-btn { background: none; border: none; cursor: pointer; color: #a8a29e; font-size: 11px; font-weight: 500; font-family: var(--font); padding: 2px 5px; border-radius: 5px; display: flex; align-items: center; gap: 3px; transition: all 0.12s; }
+.fb-btn:hover { background: #f5f5f4; color: #57534e; }
+
+/* Chat action btn */
+.c-action-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11.5px; font-weight: 500; font-family: var(--font);
+  padding: 4px 9px; border-radius: 7px; border: 1px solid #e7e5e0;
+  background: white; color: #44403c; cursor: pointer; transition: all 0.12s;
+  margin-right: 5px; margin-top: 5px;
+}
+.c-action-btn:hover { background: #f5f5f4; border-color: #d4d0cb; }
+
+/* Typing */
+.typing-dots { display: flex; gap: 3px; align-items: center; padding: 2px; }
+.typing-dots span { width: 5px; height: 5px; background: #a8a29e; border-radius: 50%; animation: tdot 1.2s ease-in-out infinite; }
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes tdot { 0%,60%,100%{ transform:translateY(0); } 30%{ transform:translateY(-4px); } }
+
+/* Context pill */
+.ctx-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #f5f5f4; border: 1px solid #e7e5e0; border-radius: 20px;
+  padding: 3px 9px; font-size: 11.5px; font-weight: 500; color: #57534e;
+}
+/* Context banner */
+.ctx-banner {
+  background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px;
+  padding: 10px 12px; font-size: 12.5px; color: #1e40af; line-height: 1.5;
+}
+.ctx-banner-lbl { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #93c5fd; margin-bottom: 3px; }
+
+/* Section label */
+.sec-lbl { font-size: 10.5px; font-weight: 700; color: #a8a29e; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 5px; }
+
+/* Prompt cards */
+.prompt-card {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 11px; border: 1px solid #e7e5e0; border-radius: 9px;
+  cursor: pointer; font-size: 12.5px; color: #44403c; font-weight: 500;
+  transition: all 0.12s; background: white; margin-bottom: 4px; font-family: var(--font);
+}
+.prompt-card:hover { background: #f5f5f4; border-color: #d4d0cb; color: var(--content-primary); }
+.p-icon { width: 27px; height: 27px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* History */
+.hist-item {
+  display: flex; align-items: center; gap: 9px; padding: 8px 11px;
+  border-radius: 9px; cursor: pointer; transition: background 0.12s;
+}
+.hist-item:hover { background: #f5f5f4; }
+.hist-item.active { background: #eff6ff; }
+.hi-title { font-size: 12.5px; font-weight: 500; color: var(--content-primary); }
+.hi-time { font-size: 11px; color: #a8a29e; margin-top: 1px; }
+
+/* Divider */
+.div-lbl { display: flex; align-items: center; gap: 7px; margin: 7px 0; }
+.div-lbl::before,.div-lbl::after { content:''; flex:1; height:1px; background:#e7e5e0; }
+.div-lbl span { font-size: 10.5px; font-weight: 600; color: #a8a29e; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+
+/* Mode dropdown */
+.mode-dropdown {
+  position: absolute; top: 56px; right: 14px;
+  background: white; border: 1px solid #e7e5e0; border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.1); z-index: 100;
+  padding: 6px; min-width: 240px;
+  opacity: 0; transform: translateY(-6px) scale(0.97);
+  pointer-events: none;
+  transition: all 0.18s cubic-bezier(0.34,1.56,0.64,1);
+}
+.mode-dropdown.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+.mode-option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 11px; border-radius: 8px; cursor: pointer;
+  transition: background 0.12s;
+}
+.mode-option:hover { background: #f5f5f4; }
+.mode-option.active { background: #eff6ff; }
+.mode-opt-icon { width: 32px; height: 32px; border-radius: 8px; background: #f5f5f4; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.mode-opt-name { font-size: 13px; font-weight: 600; color: var(--content-primary); line-height: 1; }
+.mode-opt-desc { font-size: 11.5px; color: #78716c; margin-top: 2px; }
+.mode-check { margin-left: auto; color: #2563eb; flex-shrink: 0; }
+
+/* Welcome empty */
+.welcome-empty { text-align: center; padding: 16px 0; }
+.welcome-icon { width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg,#2563eb,#7c3aed); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+
+/* Alert/insight box */
+.insight-box { border-radius: 8px; padding: 8px 10px; font-size: 12px; color: #9a3412; line-height: 1.5; margin-top: 7px; }
+.insight-box.warn { background: #fff7ed; border: 1px solid #fed7aa; }
+.insight-box.info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+
+/* Sidebar docked: shift main content */
+body.docked-mode .main { margin-right: 380px; }
+body.docked-mode #floBtn { right: 404px; }
+body.docked-mode #floPanel.docked { display: flex; }
+</style>
+</head>
+<body>
+
+<!-- ==================== SIDEBAR ==================== -->
+<nav class="sidebar" id="sidebar">
+  <!-- Logo -->
+  <div class="sidebar-logo">
+    <div class="wipflo-logo">
+      <div class="wipflo-logo-icon"></div>
+      <div class="wipflo-logo-name"></div>
+    </div>
+    <button class="sidebar-collapse-btn">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M11 13L7 9L11 5" stroke="#63666a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Nav Items -->
+  <div class="sidebar-nav">
+    <div class="nav-item active">
+      <div class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M8 2l6 6-6 6" stroke="#181919" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="8" r="2.5" stroke="#181919" stroke-width="1.5"/></svg>
+      </div>
+      <span class="nav-label">Focus</span>
+      <div class="nav-count">10</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="5" height="5" rx="1" stroke="#63666a" stroke-width="1.5"/><rect x="9.5" y="1.5" width="5" height="5" rx="1" stroke="#63666a" stroke-width="1.5"/><rect x="1.5" y="9.5" width="5" height="5" rx="1" stroke="#63666a" stroke-width="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx="1" stroke="#63666a" stroke-width="1.5"/></svg>
+      </div>
+      <span class="nav-label">Dashboard</span>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 3h12M2 7h9M2 11h12M2 15h9" stroke="#63666a" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <span class="nav-label">Engagements</span>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5v13M1.5 8h13" stroke="#63666a" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="8" r="6.5" stroke="#63666a" stroke-width="1.5"/></svg>
+      </div>
+      <span class="nav-label">Activity</span>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#63666a" stroke-width="1.5"/><ellipse cx="8" cy="8" rx="2.5" ry="6.5" stroke="#63666a" stroke-width="1.5"/><path d="M1.5 8h13" stroke="#63666a" stroke-width="1.5"/></svg>
+      </div>
+      <span class="nav-label">Marketplace</span>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 14A6 6 0 108 2a6 6 0 000 12z" stroke="#63666a" stroke-width="1.5"/><path d="M8 8V5M8 11v.5" stroke="#63666a" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <span class="nav-label">Overpass</span>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 8a3 3 0 100-6 3 3 0 000 6zM2 14c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="#63666a" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <span class="nav-label">Clients</span>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 6a2 2 0 100-4 2 2 0 000 4zM10 6a2 2 0 100-4 2 2 0 000 4zM2 14c0-2.21 1.79-4 4-4s4 1.79 4 4M10 10c2.21 0 4 1.79 4 4" stroke="#63666a" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <span class="nav-label">My Squads</span>
+      <div class="nav-count working">4</div>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="10" width="3" height="5" rx="0.5" stroke="#63666a" stroke-width="1.5"/><rect x="6.5" y="7" width="3" height="8" rx="0.5" stroke="#63666a" stroke-width="1.5"/><rect x="11.5" y="4" width="3" height="11" rx="0.5" stroke="#63666a" stroke-width="1.5"/></svg>
+      </div>
+      <span class="nav-label">Team Workload</span>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h6M3 12h4" stroke="#63666a" stroke-width="1.5" stroke-linecap="round"/><path d="M2 2h12v12a1 1 0 01-1 1H3a1 1 0 01-1-1V2z" stroke="#63666a" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </div>
+      <span class="nav-label">Reports</span>
+      <svg class="nav-caret" viewBox="0 0 16 16" fill="none"><path d="M6 11l4-3-4-3" stroke="#63666a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+  </div>
+
+  <div class="sidebar-filler"></div>
+
+  <!-- Mini Dashboard -->
+  <div class="sidebar-mini">
+    <!-- Help card -->
+    <div class="help-card">
+      <svg class="help-icon" viewBox="0 0 32 32" fill="none">
+        <path d="M16 6a10 10 0 100 20A10 10 0 0016 6zm0 15a1 1 0 110 2 1 1 0 010-2zm1-4.5a3 3 0 10-4-2.83" stroke="#0050ff" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="16" cy="22" r="1" fill="#0050ff"/>
+      </svg>
+      <p class="help-text">Facing any issue or have new idea?</p>
+      <a href="#" class="help-link">Submit Idea</a>
+    </div>
+    <!-- Mini dash -->
+    <div class="mini-dash-card">
+      <div class="mini-dash-title">Mini Dashboard</div>
+      <div class="mini-dash-row">
+        <span>Clients Following</span>
+        <div class="nav-count">5</div>
+      </div>
+      <div class="mini-dash-row">
+        <span>WIs Completed This Year</span>
+        <div class="nav-count">99</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User footer -->
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar">MN</div>
+      <div>
+        <div class="user-name">Mehraniya, Neeraj</div>
+        <div class="user-role">Tax Associate</div>
+      </div>
+    </div>
+    <button class="settings-btn">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M9 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" stroke="#63666a" stroke-width="1.3"/>
+        <path d="M14.5 9c0-.3-.02-.59-.06-.87l1.87-1.46-1.75-3.03-2.2.88a6.77 6.77 0 00-1.5-.87L10.5 1.5h-3l-.36 2.15c-.54.21-1.04.5-1.5.87l-2.2-.88L1.69 6.67l1.87 1.46A6.85 6.85 0 003.5 9c0 .3.02.59.06.87L1.69 11.33l1.75 3.03 2.2-.88c.46.37.96.66 1.5.87L7.5 16.5h3l.36-2.15c.54-.21 1.04-.5 1.5-.87l2.2.88 1.75-3.03-1.87-1.46c.04-.28.06-.57.06-.87z" stroke="#63666a" stroke-width="1.3"/>
+      </svg>
+    </button>
+  </div>
+</nav>
+
+<!-- ==================== MAIN CONTENT ==================== -->
+<div class="main" id="mainContent">
+  <div class="body-area">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-header-top">
+        <h1 class="page-title">Focus</h1>
+        <div class="binary-tab">
+          <div class="binary-tab-item">Workstream</div>
+          <div class="binary-tab-item active">Work Item</div>
+        </div>
+        <div class="page-header-filler"></div>
+        <div class="page-actions">
+          <button class="search-btn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="#63666a" stroke-width="1.5"/><path d="M10 10l3.5 3.5" stroke="#63666a" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span>Search</span>
+          </button>
+          <button class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M4 8h8M6 12h4" stroke="#63666a" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Filters
+          </button>
+          <button class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="5" height="5" rx="0.5" stroke="#63666a" stroke-width="1.5"/><rect x="9.5" y="1.5" width="5" height="5" rx="0.5" stroke="#63666a" stroke-width="1.5"/><rect x="1.5" y="9.5" width="5" height="5" rx="0.5" stroke="#63666a" stroke-width="1.5"/><rect x="9.5" y="9.5" width="5" height="5" rx="0.5" stroke="#63666a" stroke-width="1.5"/></svg>
+            Customize
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Filters -->
+      <div class="quick-filters">
+        <span class="qf-label">Quick Filters:</span>
+        <div class="qf-tab">Following</div>
+        <div class="qf-tab active">Workstream</div>
+        <div class="qf-tab">Assigned to me</div>
+        <div class="qf-tab">Filter 234</div>
+        <div class="qf-tab">Filter everything</div>
+        <div class="qf-tab">Quick Filter Demo</div>
+        <div class="qf-tab">EM - Tyler Scott</div>
+        <div class="qf-tab">Client Smith, John</div>
+        <div class="qf-tab" style="color:#a8a29e;">...Show more</div>
+      </div>
+    </div>
+
+    <!-- Tertiary Status Tabs -->
+    <div class="tertiary-tabs-wrap" style="padding-bottom:0;">
+      <div class="tertiary-tabs">
+        <div class="t-tab active">Total Records <div class="t-badge" style="background:#0050ff;color:#f8fafc;">10</div></div>
+        <div class="t-tab">Waiting <div class="t-badge" style="background:#ffb703;color:#181919;">1</div></div>
+        <div class="t-tab">Not Started <div class="t-badge" style="background:#a9b0b8;color:#181919;">2</div></div>
+        <div class="t-tab">Working <div class="t-badge" style="background:#00bdff;color:#181919;">2</div></div>
+        <div class="t-tab">To Review <div class="t-badge" style="background:#ad00ff;color:#f8fafc;">2</div></div>
+        <div class="t-tab">Rework <div class="t-badge" style="background:#a33c00;color:#f8fafc;">1</div></div>
+        <div class="t-tab">Snooze <div class="t-badge" style="background:#ff5017;color:#181919;">2</div></div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap" style="margin-top:0;">
+      <table class="wi-table">
+        <thead>
+          <tr>
+            <th class="col-check"><input type="checkbox" style="accent-color:#0050ff;"></th>
+            <th class="col-expand"></th>
+            <th class="col-name"><div class="th-inner">Work Item Name <svg class="sort-icon" viewBox="0 0 12 12" fill="none"><path d="M6 9V3M3 6l3 3 3-3" stroke="#969da3" stroke-width="1.2" stroke-linecap="round"/></svg></div></th>
+            <th class="col-type"><div class="th-inner">WI Type</div></th>
+            <th class="col-client"><div class="th-inner">Client Name <svg class="sort-icon" viewBox="0 0 12 12" fill="none"><path d="M6 9V3M3 6l3 3 3-3" stroke="#969da3" stroke-width="1.2" stroke-linecap="round"/></svg></div></th>
+            <th class="col-workstream"><div class="th-inner">Workstream <svg class="sort-icon" viewBox="0 0 12 12" fill="none"><path d="M6 9V3M3 6l3 3 3-3" stroke="#969da3" stroke-width="1.2" stroke-linecap="round"/></svg></div></th>
+            <th class="col-assignee"><div class="th-inner">Assignee</div></th>
+            <th class="col-status"><div class="th-inner">Status</div></th>
+            <th class="col-due"><div class="th-inner">Due Date</div></th>
+            <th class="col-priority"><div class="th-inner">Priority</div></th>
+            <th class="col-budget"><div class="th-inner">Budget</div></th>
+            <th class="col-actions"></th>
+          </tr>
+        </thead>
+        <tbody id="wiTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== FLO BUTTON ==================== -->
+<button id="floBtn" onclick="togglePanel()">
+  <div class="flo-tooltip">Ask Flo</div>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <path d="M12 2L9.5 9.5L2 12L9.5 14.5L12 22L14.5 14.5L22 12L14.5 9.5L12 2Z" fill="white" opacity="0.92"/>
+    <circle cx="7" cy="7" r="1.2" fill="white" opacity="0.55"/>
+    <circle cx="17" cy="17" r="1" fill="white" opacity="0.55"/>
+  </svg>
+</button>
+
+<!-- ==================== FLO PANEL ==================== -->
+<div id="floPanel">
+  <!-- Header -->
+  <div class="panel-header" style="position:relative;">
+    <div style="display:flex;align-items:center;gap:9px;">
+      <div class="flo-avatar-sm">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2L9.5 9.5L2 12L9.5 14.5L12 22L14.5 14.5L22 12L14.5 9.5L12 2Z" fill="white"/></svg>
+      </div>
+      <div>
+        <div class="panel-name">Flo</div>
+        <div class="panel-status"><span class="panel-status-dot"></span>Context aware</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:2px;">
+      <button class="ph-icon-btn" id="btnNewChat" title="New Chat" onclick="showNewChat()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <button class="ph-icon-btn" id="btnHistory" title="Chat History" onclick="showHistory()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <button class="ph-icon-btn" id="btnMode" title="Display Mode" onclick="toggleModeMenu(event)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M9 21h6M12 16v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <div style="width:1px;height:16px;background:#e7e5e0;margin:0 3px;"></div>
+      <button class="ph-icon-btn" title="Hide" onclick="togglePanel()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <!-- Mode Dropdown (absolute, no space taken) -->
+    <div class="mode-dropdown" id="modeDropdown">
+      <div class="mode-option active" id="modeFloat" onclick="setMode('floating')">
+        <div class="mode-opt-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="13" rx="2" stroke="#2563eb" stroke-width="1.8"/><circle cx="19" cy="19" r="4" fill="#2563eb"/></svg></div>
+        <div>
+          <div class="mode-opt-name">Floating <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:20px;font-weight:600;margin-left:5px;">Current</span></div>
+          <div class="mode-opt-desc">Compact panel, always accessible</div>
+        </div>
+        <svg class="mode-check" id="checkFloat" width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="mode-option" id="modeSidebar" onclick="setMode('sidebar')">
+        <div class="mode-opt-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#7c3aed" stroke-width="1.8"/><path d="M15 3v18" stroke="#7c3aed" stroke-width="1.8"/></svg></div>
+        <div>
+          <div class="mode-opt-name">Sidebar</div>
+          <div class="mode-opt-desc">Docked right, use platform freely</div>
+        </div>
+        <svg class="mode-check" id="checkSidebar" width="15" height="15" viewBox="0 0 24 24" fill="none" style="opacity:0;"><path d="M5 12l5 5L20 7" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="panel-body" id="panelBody"></div>
+
+  <!-- Input -->
+  <div class="panel-input">
+    <div class="input-wrap">
+      <button class="attach-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <textarea class="chat-ta" id="chatInput" rows="1" placeholder="Ask Flo about workstreams, deliverables, clients, or reports…" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" onclick="sendMessage()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <div class="input-hint">Flo uses your current Focus view for context</div>
+  </div>
+</div>
+
+<script>
+// ===== TABLE DATA =====
+const rows = [
+  {name:'Get all the previous tax documents', type:'Tax Return', client:'Burton, Ethan', ws:'Organizational Performance', assignees:[['MN','#0078a3'],['TS','#7c3aed']], status:'waiting', due:'Jun 30, 2024', priority:'High', budget:'$2,400'},
+  {name:"Previous \"And' future date", type:'Advisory', client:'Miller, Sally and Edward', ws:'Associate Training Plan', assignees:[['JL','#16a34a']], status:'working', due:'Jul 5, 2024', priority:'Medium', budget:'$1,800'},
+  {name:'Associate Training Plan', type:'Consulting', client:'John, Smith', ws:'Previous year tax documents', assignees:[['AB','#dc2626'],['CD','#d97706']], status:'review', due:'Jul 10, 2024', priority:'Low', budget:'$900'},
+  {name:'Previous year tax documents', type:'Tax Return', client:'Fritz, Yareli', ws:'Health Care Consulting', assignees:[['MN','#0078a3']], status:'working', due:'Jul 12, 2024', priority:'High', budget:'$3,200'},
+  {name:'Organizational Performance', type:'Advisory', client:'Burton, Evan', ws:'Human Capital Management', assignees:[['TS','#7c3aed'],['JL','#16a34a']], status:'rework', due:'Jul 15, 2024', priority:'High', budget:'$4,100'},
+  {name:'Health Care Consulting', type:'Consulting', client:'Samson, Kyle and Allison', ws:"Intellectual Properties", assignees:[['AB','#dc2626']], status:'snooze', due:'Jul 18, 2024', priority:'Medium', budget:'—', snoozed:true},
+  {name:'Human Capital Management', type:'Tax Return', client:'Miller, Sally and Edward', ws:'Prepare the documentation', assignees:[['CD','#d97706'],['MN','#0078a3']], status:'not-started', due:'Jul 20, 2024', priority:'Low', budget:'$1,100'},
+  {name:"Intellectual Properties Sales & Dev…", type:'Advisory', client:'Samson, Kyle and Allison', ws:'Risk Advisory Services', assignees:[['TS','#7c3aed']], status:'not-started', due:'Jul 22, 2024', priority:'Medium', budget:'$2,750'},
+  {name:'Prepare the documentation', type:'Consulting', client:'Fritz, Yareli', ws:'Get all the previous tax documents', assignees:[['JL','#16a34a'],['AB','#dc2626']], status:'working', due:'Jul 25, 2024', priority:'High', budget:'$1,600'},
+  {name:'Risk Advisory Services', type:'Tax Return', client:'Burton, Evan', ws:'Associate Training Plan', assignees:[['CD','#d97706']], status:'review', due:'Jul 31, 2024', priority:'Low', budget:'$3,500'},
+];
+
+const statusLabel = {waiting:'Waiting',working:'Working','not-started':'Not Started',review:'To Review',rework:'Rework',snooze:'Snooze'};
+const statusClass = {waiting:'s-waiting',working:'s-working','not-started':'s-not-started',review:'s-review',rework:'s-rework',snooze:'s-snooze'};
+
+function renderTable() {
+  const tbody = document.getElementById('wiTableBody');
+  tbody.innerHTML = rows.map(r => `
+    <tr class="${r.snoozed?'snoozed':''}">
+      <td class="col-check"><input type="checkbox" style="accent-color:#0050ff;"></td>
+      <td class="col-expand"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#a9b0b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+      <td class="col-name" style="font-weight:500;max-width:270px;">${r.name}</td>
+      <td class="col-type" style="color:#63666a;">${r.type}</td>
+      <td class="col-client" style="max-width:270px;">${r.client}</td>
+      <td class="col-workstream" style="max-width:270px;color:#63666a;">${r.ws}</td>
+      <td class="col-assignee">
+        <div class="assignee-group">
+          ${r.assignees.map(([i,c])=>`<div class="a-avatar" style="background:${c};">${i}</div>`).join('')}
+        </div>
+      </td>
+      <td class="col-status"><span class="status-badge ${statusClass[r.status]}">${statusLabel[r.status]}</span></td>
+      <td class="col-due" style="color:#63666a;">${r.due}</td>
+      <td class="col-priority" style="color:#63666a;">${r.priority}</td>
+      <td class="col-budget" style="color:#63666a;">${r.budget}</td>
+      <td class="col-actions">
+        <div style="display:flex;gap:4px;justify-content:flex-end;">
+          <button style="background:none;border:none;cursor:pointer;padding:3px;color:#a9b0b8;border-radius:5px;transition:background 0.12s;" onmouseover="this.style.background='#f5f5f4'" onmouseout="this.style.background='none'">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ===== QF + TABS =====
+document.querySelectorAll('.qf-tab').forEach(t => t.addEventListener('click', function(){
+  document.querySelectorAll('.qf-tab').forEach(x=>x.classList.remove('active'));
+  this.classList.add('active');
+}));
+document.querySelectorAll('.t-tab').forEach(t => t.addEventListener('click', function(){
+  document.querySelectorAll('.t-tab').forEach(x=>x.classList.remove('active'));
+  this.classList.add('active');
+}));
+document.querySelectorAll('.binary-tab-item').forEach(t => t.addEventListener('click', function(){
+  document.querySelectorAll('.binary-tab-item').forEach(x=>x.classList.remove('active'));
+  this.classList.add('active');
+}));
+document.querySelectorAll('.nav-item').forEach(t => t.addEventListener('click', function(){
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  this.classList.add('active');
+}));
+
+// ===== FLO PANEL STATE =====
+let panelOpen = false;
+let currentMode = 'floating';
+let currentView = 'welcome';
+let chatMessages = [];
+let isTyping = false;
+
+function togglePanel() {
+  const panel = document.getElementById('floPanel');
+  if (currentMode === 'sidebar') {
+    // In sidebar mode, toggle differently
+    panelOpen = !panelOpen;
+    if (panelOpen) panel.classList.add('open');
+    else panel.classList.remove('open');
+    return;
+  }
+  panelOpen = !panelOpen;
+  if (panelOpen) {
+    panel.classList.add('open');
+    if (currentView === 'welcome' && chatMessages.length === 0) showWelcome();
+  } else {
+    panel.classList.remove('open');
+    closeModeMenu();
+  }
+}
+
+function toggleModeMenu(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('modeDropdown');
+  const btn = document.getElementById('btnMode');
+  const isOpen = dd.classList.contains('open');
+  if (isOpen) { dd.classList.remove('open'); btn.classList.remove('active'); }
+  else { dd.classList.add('open'); btn.classList.add('active'); }
+}
+function closeModeMenu() {
+  document.getElementById('modeDropdown').classList.remove('open');
+  document.getElementById('btnMode').classList.remove('active');
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#modeDropdown') && !e.target.closest('#btnMode')) closeModeMenu();
+});
+
+function setMode(mode) {
+  const panel = document.getElementById('floPanel');
+  const btn = document.getElementById('floBtn');
+  closeModeMenu();
+  document.getElementById('btnMode').classList.remove('active');
+
+  // Reset visuals
+  ['modeFloat','modeSidebar'].forEach(id => document.getElementById(id).classList.remove('active'));
+  ['checkFloat','checkSidebar'].forEach(id => document.getElementById(id).style.opacity = '0');
+
+  currentMode = mode;
+
+  if (mode === 'floating') {
+    document.getElementById('modeFloat').classList.add('active');
+    document.getElementById('checkFloat').style.opacity = '1';
+    // Reset floating labels
+    document.getElementById('modeFloat').querySelector('.mode-opt-name').innerHTML = 'Floating <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:20px;font-weight:600;margin-left:5px;">Current</span>';
+    document.getElementById('modeSidebar').querySelector('.mode-opt-name').textContent = 'Sidebar';
+    panel.classList.remove('docked');
+    document.body.classList.remove('docked-mode');
+    panel.style.bottom = '88px';
+    panel.style.right = '24px';
+    panel.style.top = '';
+    panel.style.height = '624px';
+    panel.style.width = '420px';
+    panel.style.borderRadius = '20px';
+    panel.style.borderLeft = '';
+    if (!panelOpen) { panel.classList.remove('open'); }
+    else { panel.classList.add('open'); }
+  } else if (mode === 'sidebar') {
+    document.getElementById('modeSidebar').classList.add('active');
+    document.getElementById('checkSidebar').style.opacity = '1';
+    document.getElementById('modeFloat').querySelector('.mode-opt-name').textContent = 'Floating';
+    document.getElementById('modeSidebar').querySelector('.mode-opt-name').innerHTML = 'Sidebar <span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:20px;font-weight:600;margin-left:5px;">Current</span>';
+    // Dock to right
+    panel.classList.add('docked');
+    document.body.classList.add('docked-mode');
+    panelOpen = true;
+    // Animate in
+    setTimeout(() => panel.classList.add('open'), 10);
+    if (currentView === 'welcome' && chatMessages.length === 0) showWelcome();
+  }
+}
+
+// ===== VIEWS =====
+function showWelcome() {
+  currentView = 'welcome';
+  clearActiveHeader();
+  const body = document.getElementById('panelBody');
+  body.innerHTML = `
+    <div>
+      <div style="margin-bottom:8px;"><span class="ctx-pill">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+        Focus · Work Items
+      </span></div>
+      <div class="ctx-banner">
+        <div class="ctx-banner-lbl">Flo · Context Aware</div>
+        Hi Neeraj, I can help analyze work items, generate reports, summarize statuses, or find bottlenecks based on your current <strong>Focus → Work Items</strong> view.
+      </div>
+    </div>
+    <div>
+      <div class="sec-lbl">Suggested Actions</div>
+      <div class="prompt-card" onclick="sendPrompt('Summarize waiting items')">
+        <div class="p-icon" style="background:#fef3c7;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="#d97706" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        Summarize waiting items
+      </div>
+      <div class="prompt-card" onclick="sendPrompt('Show rework trends this month')">
+        <div class="p-icon" style="background:#fee2e2;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="16 7 22 7 22 13" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        Show rework trends this month
+      </div>
+      <div class="prompt-card" onclick="sendPrompt('Which clients are most delayed?')">
+        <div class="p-icon" style="background:#f3e8ff;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#7c3aed" stroke-width="1.8"/><line x1="12" y1="9" x2="12" y2="13" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+        Which clients are most delayed?
+      </div>
+      <div class="prompt-card" onclick="sendPrompt('Generate weekly manager summary')">
+        <div class="p-icon" style="background:#dbeafe;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#1e40af" stroke-width="1.8"/><path d="M8 12h8M8 8h8M8 16h5" stroke="#1e40af" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        Generate weekly manager summary
+      </div>
+    </div>
+  `;
+}
+
+function showNewChat() {
+  currentView = 'newchat';
+  chatMessages = [];
+  setHeaderActive('btnNewChat');
+  const body = document.getElementById('panelBody');
+  body.innerHTML = `
+    <div class="welcome-empty">
+      <div class="welcome-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2L9.5 9.5L2 12L9.5 14.5L12 22L14.5 14.5L22 12L14.5 9.5L12 2Z" fill="white"/></svg></div>
+      <div style="font-size:14px;font-weight:700;color:#181919;margin-bottom:4px;">Start a new chat</div>
+      <div style="font-size:12px;color:#63666a;line-height:1.5;">Ask Flo anything about your workflows,<br>clients, deliverables, or reports.</div>
+    </div>
+    <div>
+      <div class="sec-lbl">Suggested Actions</div>
+      <div class="prompt-card" onclick="sendPrompt('Summarize overdue work items')">
+        <div class="p-icon" style="background:#fee2e2;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#dc2626" stroke-width="1.8"/><line x1="12" y1="8" x2="12" y2="12" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="16" x2="12.01" y2="16" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+        Summarize overdue work items
+      </div>
+      <div class="prompt-card" onclick="sendPrompt('Show workstreams needing review')">
+        <div class="p-icon" style="background:#f3e8ff;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#7c3aed" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="#7c3aed" stroke-width="1.8"/></svg></div>
+        Show workstreams needing review
+      </div>
+      <div class="prompt-card" onclick="sendPrompt('Generate weekly status report')">
+        <div class="p-icon" style="background:#dbeafe;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#1e40af" stroke-width="1.8"/><path d="M8 16l4-8 4 8" stroke="#1e40af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        Generate weekly status report
+      </div>
+    </div>
+    <div>
+      <div class="sec-lbl">Reports</div>
+      <div class="prompt-card" onclick="sendPrompt('Create utilization report')"><div class="p-icon" style="background:#d1fae5;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2v10l6.9 3.99M12 22a10 10 0 110-20 10 10 0 010 20z" stroke="#16a34a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Create utilization report</div>
+      <div class="prompt-card" onclick="sendPrompt('Generate deliverable status report')"><div class="p-icon" style="background:#fef3c7;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#d97706" stroke-width="1.8"/><polyline points="14 2 14 8 20 8" stroke="#d97706" stroke-width="1.8" stroke-linejoin="round"/></svg></div>Generate deliverable status report</div>
+      <div class="prompt-card" onclick="sendPrompt('Show bottlenecks this month')"><div class="p-icon" style="background:#fee2e2;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="18" r="3" stroke="#dc2626" stroke-width="1.8"/><circle cx="6" cy="6" r="3" stroke="#dc2626" stroke-width="1.8"/><path d="M13 6h3a2 2 0 012 2v7M11 18H8a2 2 0 01-2-2V9" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"/></svg></div>Show bottlenecks this month</div>
+    </div>
+    <div>
+      <div class="sec-lbl">Search & Filters</div>
+      <div class="prompt-card" onclick="sendPrompt('Find snoozed work items')"><div class="p-icon" style="background:#f5f5f4;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="#78716c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="3" y1="3" x2="21" y2="21" stroke="#78716c" stroke-width="1.8" stroke-linecap="round"/></svg></div>Find snoozed work items</div>
+      <div class="prompt-card" onclick="sendPrompt('Show high-priority clients')"><div class="p-icon" style="background:#fee2e2;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Show high-priority clients</div>
+      <div class="prompt-card" onclick="sendPrompt('Filter workstreams due this week')"><div class="p-icon" style="background:#dbeafe;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#1e40af" stroke-width="1.8"/><line x1="16" y1="2" x2="16" y2="6" stroke="#1e40af" stroke-width="1.8" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="#1e40af" stroke-width="1.8" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="#1e40af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Filter workstreams due this week</div>
+    </div>
+  `;
+}
+
+function showHistory() {
+  currentView = 'history';
+  setHeaderActive('btnHistory');
+  const body = document.getElementById('panelBody');
+  body.innerHTML = `
+    <div class="div-lbl"><span>Today</span></div>
+    <div class="hist-item active" onclick="loadHistory('Weekly review summary')">
+      <div class="msg-flo-sm"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 2L9.5 9.5L2 12L9.5 14.5L12 22L14.5 14.5L22 12L14.5 9.5L12 2Z" fill="white"/></svg></div>
+      <div style="flex:1;"><div class="hi-title">Weekly review summary</div><div class="hi-time">2 hours ago · 8 messages</div></div>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#d4d0cb" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <div class="hist-item" onclick="loadHistory('Client bottleneck analysis')">
+      <div class="msg-flo-sm"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 2L9.5 9.5L2 12L9.5 14.5L12 22L14.5 14.5L22 12L14.5 9.5L12 2Z" fill="white"/></svg></div>
+      <div style="flex:1;"><div class="hi-title">Client bottleneck analysis</div><div class="hi-time">5 hours ago · 4 messages</div></div>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#d4d0cb" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <div class="div-lbl"><span>Yesterday</span></div>
+    <div class="hist-item" onclick="loadHistory('Pending approvals')">
+      <div class="msg-flo-sm"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 2L9.5 9.5L2 12L9.5 14.5L12 22L14.5 14.5L22 12L14.5 9.5L12 2Z" fill="white"/></svg></div>
+      <div style="flex:1;"><div class="hi-title">Pending approvals</div><div class="hi-time">Yesterday, 3:45 PM · 6 messages</div></div>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#d4d0cb" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <div class="hist-item" onclick="loadHistory('Tax deliverable report')">
+      <div class="msg-flo-sm"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 2L9.5 9.5L2 12L9.5 14.5L12 22L14.5 14.5L22 12L14.5 9.5L12 2Z" fill="white"/></svg></div>
+      <div style="flex:1;"><div class="hi-title">Tax deliverable report</div><div class="hi-time">Yesterday, 10:20 AM · 3 messages</div></div>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#d4d0cb" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <div class="div-lbl"><span>Previous 7 Days</span></div>
+    <div class="hist-item" onclick="loadHistory('Q2 GST filing status')">
+      <div class="msg-flo-sm"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 2L9.5 9.5L2 12L9.5 14.5L12 22L14.5 14.5L22 12L14.5 9.5L12 2Z" fill="white"/></svg></div>
+      <div style="flex:1;"><div class="hi-title">Q2 GST filing status</div><div class="hi-time">Jul 3 · 5 messages</div></div>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#d4d0cb" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <div class="hist-item" onclick="loadHistory('Overdue items this quarter')">
+      <div class="msg-flo-sm"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 2L9.5 9.5L2 12L9.5 14.5L12 22L14.5 14.5L22 12L14.5 9.5L12 2Z" fill="white"/></svg></div>
+      <div style="flex:1;"><div class="hi-title">Overdue items this quarter</div><div class="hi-time">Jul 1 · 7 messages</div></div>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#d4d0cb" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+  `;
+}
+
+function loadHistory(title) {
+  currentView = 'chat'; chatMessages = []; clearActiveHeader();
+  document.getElementById('panelBody').innerHTML = '';
+  addAIMsg(`Resuming: <strong>${title}</strong>. Here's where we left off — what else can I help you with?`, '');
+}
+
+function setHeaderActive(id) {
+  clearActiveHeader();
+  document.getElementById(id)?.classList.add('active');
+}
+function clearActiveHeader() {
+  ['btnNewChat','btnHistory','btnMode'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+}
+
+// ===== CHAT =====
+function sendPrompt(t) {
+  document.getElementById('chatInput').value = t;
+  sendMessage();
+}
+
+function sendMessage() {
+  const inp = document.getElementById('chatInput');
+  const txt = inp.value.trim();
+  if (!txt || isTyping) return;
+  inp.value = ''; inp.style.height = '';
+  currentView = 'chat'; clearActiveHeader();
+  if (chatMessages.length === 0) document.getElementById('panelBody').innerHTML = '';
+  chatMessages.push({r:'user',t:txt});
+  addUserMsg(txt);
+  showTyping();
+  setTimeout(() => buildResponse(txt), 800 + Math.random()*500);
+}
+
+function addUserMsg(txt) {
+  const b = document.getElementById('panelBody');
+  const el = document.createElement('div');
+  el.className = 'msg-user';
+  el.innerHTML = `<div class="user-bbl">${escHtml(txt)}</div>`;
+  b.appendChild(el); b.scrollTop = b.scrollHeight;
+}
+
+function addAIMsg(html, extra) {
+  const b = document.getElementById('panelBody');
+  const el = document.createElement('div');
+  el.className = 'msg-ai';
+  el.innerHTML = `
+    <div class="msg-flo-sm" style="margin-top:2px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 2L9.5 9.5L2 12L9.5 14.5L12 22L14.5 14.5L22 12L14.5 9.5L12 2Z" fill="white"/></svg></div>
+    <div style="flex:1;min-width:0;">
+      <div class="flo-bbl">${html}</div>
+      ${extra||''}
+      <div class="fb-row">
+        <button class="fb-btn" onclick="this.style.color='#16a34a'"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z" stroke="currentColor" stroke-width="1.8"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> Helpful</button>
+        <button class="fb-btn" onclick="this.style.color='#dc2626'"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z" stroke="currentColor" stroke-width="1.8"/><path d="M17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        <button class="fb-btn" onclick="copyMsg(this)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> Copy</button>
+      </div>
+    </div>`;
+  b.appendChild(el); b.scrollTop = b.scrollHeight;
+}
+
+function copyMsg(btn) {
+  btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Copied';
+  setTimeout(()=>btn.innerHTML='<svg width="11" height="11" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> Copy',1500);
+}
+
+let typingEl = null;
+function showTyping() {
+  isTyping = true;
+  const b = document.getElementById('panelBody');
+  typingEl = document.createElement('div');
+  typingEl.id = 'typingEl'; typingEl.className = 'msg-ai';
+  typingEl.innerHTML = `<div class="msg-flo-sm"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M12 2L9.5 9.5L2 12L9.5 14.5L12 22L14.5 14.5L22 12L14.5 9.5L12 2Z" fill="white"/></svg></div><div class="flo-bbl"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  b.appendChild(typingEl); b.scrollTop = b.scrollHeight;
+}
+function hideTyping() {
+  document.getElementById('typingEl')?.remove(); isTyping = false;
+}
+
+// ===== RESPONSES =====
+function buildResponse(text) {
+  hideTyping();
+  const t = text.toLowerCase();
+
+  if (t.includes('wait') && (t.includes('summar') || t.includes('item'))) {
+    addAIMsg('Here\'s a summary of your <strong>waiting work items</strong>. You have <strong>9 items</strong> currently awaiting action.',
+    `<div class="ai-card">
+      <div class="ai-card-hd">Waiting Items — July</div>
+      <table class="c-tbl"><thead><tr><th>Work Item</th><th>Client</th><th>Days</th></tr></thead><tbody>
+        <tr><td>Q3 Tax Return</td><td>Burton, Ethan</td><td style="color:#dc2626;font-weight:600;">12d</td></tr>
+        <tr><td>Financial Statement Draft</td><td>Fritz, Yareli</td><td style="color:#d97706;font-weight:600;">7d</td></tr>
+        <tr><td>GST Amendment</td><td>John, Smith</td><td style="color:#d97706;font-weight:600;">5d</td></tr>
+        <tr><td>Payroll Variance Check</td><td>Miller, Sally</td><td style="color:#63666a;font-weight:600;">2d</td></tr>
+      </tbody></table>
+      <div><button class="c-action-btn" onclick="sendPrompt('Send reminders for waiting items')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Send reminders</button><button class="c-action-btn" onclick="sendPrompt('Export waiting items report')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Export</button></div>
+    </div>`);
+  } else if (t.includes('rework') || t.includes('trend')) {
+    addAIMsg('Your <strong>rework rate</strong> has increased by <span style="color:#dc2626;font-weight:700;">18%</span> this month across all workstreams.',
+    `<div class="ai-card"><div class="ai-card-hd">Rework Trends — July</div><div class="stat-grid">
+      <div class="stat-box"><div class="stat-val">23</div><div class="stat-lbl">Total Reworks</div><div class="stat-trend dn">↑ 18% vs last month</div></div>
+      <div class="stat-box"><div class="stat-val">4.2</div><div class="stat-lbl">Avg Cycles</div><div class="stat-trend dn">↑ 0.8 vs last month</div></div>
+      <div class="stat-box"><div class="stat-val" style="font-size:13px;">Burton, Evan</div><div class="stat-lbl">Most Reworks</div><div class="stat-trend dn">7 items</div></div>
+      <div class="stat-box"><div class="stat-val" style="font-size:13px;">Tax</div><div class="stat-lbl">Top Category</div><div class="stat-trend dn">9 reworks</div></div>
+    </div><div class="insight-box warn" style="margin-top:8px;"><strong>⚠ Insight:</strong> Burton, Evan accounts for 30% of all reworks. Consider a dedicated review session.</div></div>`);
+  } else if (t.includes('delay') || (t.includes('client') && t.includes('most'))) {
+    addAIMsg('Here are the <strong>most delayed clients</strong> based on overdue and stalled work items.',
+    `<div class="ai-card"><div class="ai-card-hd">Client Delay Analysis</div><table class="c-tbl"><thead><tr><th>Client</th><th>Overdue</th><th>Avg Delay</th><th>Risk</th></tr></thead><tbody>
+      <tr><td><strong>John, Smith</strong></td><td style="color:#dc2626;font-weight:600;">4</td><td>9.2d</td><td><span class="tpill tp-x">High</span></td></tr>
+      <tr><td>Burton, Evan</td><td style="color:#d97706;font-weight:600;">3</td><td>6.4d</td><td><span class="tpill tp-r">Med</span></td></tr>
+      <tr><td>Miller, Sally</td><td style="color:#d97706;font-weight:600;">2</td><td>4.1d</td><td><span class="tpill tp-r">Med</span></td></tr>
+      <tr><td>Fritz, Yareli</td><td style="color:#63666a;font-weight:600;">1</td><td>1.2d</td><td><span class="tpill tp-d">Low</span></td></tr>
+    </tbody></table>
+    <div><button class="c-action-btn" onclick="sendPrompt('Generate escalation report')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.6"/><path d="M12 9v4M12 17v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> Escalation report</button></div></div>`);
+  } else if (t.includes('weekly') || t.includes('manager') || t.includes('summar') || t.includes('status report')) {
+    addAIMsg('Here\'s your <strong>Weekly Workstream Summary</strong> for the week of Jul 7.',
+    `<div class="ai-card"><div class="ai-card-hd">Weekly Summary — Week of Jul 7</div><div class="stat-grid">
+      <div class="stat-box"><div class="stat-val">47</div><div class="stat-lbl">Active Work Items</div><div class="stat-trend up">↑ 3 new this week</div></div>
+      <div class="stat-box"><div class="stat-val">8</div><div class="stat-lbl">Overdue Reviews</div><div class="stat-trend dn">↑ 2 since last week</div></div>
+      <div class="stat-box"><div class="stat-val">14</div><div class="stat-lbl">In Progress</div><div class="stat-trend up">On track</div></div>
+      <div class="stat-box"><div class="stat-val">5</div><div class="stat-lbl">Snoozed Items</div><div class="stat-trend dn">Needs follow-up</div></div>
+    </div><table class="c-tbl" style="margin-top:9px;"><thead><tr><th>Workstream</th><th>Items</th><th>On Track</th><th>Status</th></tr></thead><tbody>
+      <tr><td>Tax Filing</td><td>12</td><td style="color:#16a34a;font-weight:700;">8</td><td><span class="tpill tp-p">Active</span></td></tr>
+      <tr><td>Audit Prep</td><td>7</td><td style="color:#d97706;font-weight:700;">3</td><td><span class="tpill tp-w">At Risk</span></td></tr>
+      <tr><td>Payroll</td><td>6</td><td style="color:#16a34a;font-weight:700;">6</td><td><span class="tpill tp-d">On Track</span></td></tr>
+      <tr><td>Compliance</td><td>9</td><td style="color:#dc2626;font-weight:700;">4</td><td><span class="tpill tp-x">Delayed</span></td></tr>
+    </tbody></table>
+    <div><button class="c-action-btn" onclick="sendPrompt('Share summary with team')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.6"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" stroke="currentColor" stroke-width="1.6"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" stroke="currentColor" stroke-width="1.6"/></svg> Share</button><button class="c-action-btn" onclick="sendPrompt('Export report as PDF')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.6"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.6"/></svg> Export PDF</button></div></div>`);
+  } else if (t.includes('overdue')) {
+    addAIMsg('You have <strong>8 overdue items</strong> across 4 clients. Here\'s a breakdown:',
+    `<div class="ai-card"><div class="ai-card-hd">Overdue Work Items</div><table class="c-tbl"><thead><tr><th>Item</th><th>Client</th><th>Days Late</th></tr></thead><tbody>
+      <tr><td>Q3 Tax Return</td><td>Burton, Ethan</td><td style="color:#dc2626;font-weight:700;">+12d</td></tr>
+      <tr><td>GST Filing — Q2</td><td>John, Smith</td><td style="color:#dc2626;font-weight:700;">+8d</td></tr>
+      <tr><td>Vendor Reconciliation</td><td>Fritz, Yareli</td><td style="color:#d97706;font-weight:700;">+5d</td></tr>
+      <tr><td>Compliance Checklist</td><td>Miller, Sally</td><td style="color:#d97706;font-weight:700;">+3d</td></tr>
+    </tbody></table></div>`);
+  } else if (t.includes('utilization')) {
+    addAIMsg('Here\'s your team\'s <strong>utilization report</strong> for this week.',
+    `<div class="ai-card"><div class="ai-card-hd">Team Utilization</div><div class="stat-grid">
+      <div class="stat-box"><div class="stat-val">84%</div><div class="stat-lbl">Avg Utilization</div><div class="stat-trend up">↑ 6% vs last week</div></div>
+      <div class="stat-box"><div class="stat-val" style="font-size:14px;">Mehraniya, N</div><div class="stat-lbl">Top Contributor</div><div class="stat-trend up">94% utilization</div></div>
+    </div><table class="c-tbl" style="margin-top:9px;"><thead><tr><th>Member</th><th>Assigned</th><th>Done</th><th>Util.</th></tr></thead><tbody>
+      <tr><td>Mehraniya, N.</td><td>11</td><td>10</td><td style="color:#16a34a;font-weight:700;">94%</td></tr>
+      <tr><td>Tyler, S.</td><td>9</td><td>7</td><td style="color:#16a34a;font-weight:700;">82%</td></tr>
+      <tr><td>Arnold, B.</td><td>8</td><td>6</td><td style="color:#d97706;font-weight:700;">75%</td></tr>
+      <tr><td>Lee, J.</td><td>7</td><td>4</td><td style="color:#dc2626;font-weight:700;">57%</td></tr>
+    </tbody></table></div>`);
+  } else if (t.includes('bottleneck')) {
+    addAIMsg('I identified <strong>3 bottlenecks</strong> in your current workstreams this month.',
+    `<div class="ai-card"><div class="ai-card-hd">Bottleneck Analysis — July</div>
+      <div class="insight-box warn"><strong>🔴 Tax Filing — John, Smith</strong><br>3 items stuck at "Waiting" for 12+ days. Client documents not received.</div>
+      <div class="insight-box warn" style="margin-top:7px;"><strong>🟠 Audit Prep — Burton, Evan</strong><br>Review step averaging 6 days. Needs dedicated reviewer assigned.</div>
+      <div style="background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:8px 10px;font-size:12px;color:#854d0e;margin-top:7px;"><strong>🟡 Payroll — Miller, Sally</strong><br>Approval pending with finance team for 4 days.</div>
+      <div><button class="c-action-btn" onclick="sendPrompt('Create action plan for bottlenecks')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg> Create action plan</button></div>
+    </div>`);
+  } else if (t.includes('snooze') || t.includes('snoozed')) {
+    addAIMsg('Found <strong>5 snoozed work items</strong>. Here\'s what\'s been put on hold:',
+    `<div class="ai-card"><div class="ai-card-hd">Snoozed Items</div><table class="c-tbl"><thead><tr><th>Item</th><th>Client</th><th>Until</th></tr></thead><tbody>
+      <tr><td>Health Care Consulting</td><td>Samson, Kyle</td><td>Jul 31</td></tr>
+      <tr><td>Board Minutes Review</td><td>Burton, Evan</td><td>Jul 15</td></tr>
+      <tr><td>IT Reconciliation</td><td>Fritz, Yareli</td><td>Jul 18</td></tr>
+    </tbody></table></div>`);
+  } else if (t.includes('high-priority') || t.includes('high priority')) {
+    addAIMsg('Here are your <strong>high-priority clients</strong> based on open items and deadlines.',
+    `<div class="ai-card"><div class="ai-card-hd">High Priority Clients</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid #fee2e2;border-radius:8px;background:#fff5f5;">
+          <div style="width:22px;height:22px;border-radius:50%;background:#dc2626;color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">JS</div>
+          <div><div style="font-size:12.5px;font-weight:600;">John, Smith</div><div style="font-size:11px;color:#dc2626;">4 overdue · 2 escalations pending</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid #fef3c7;border-radius:8px;background:#fffbeb;">
+          <div style="width:22px;height:22px;border-radius:50%;background:#d97706;color:white;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">BE</div>
+          <div><div style="font-size:12.5px;font-weight:600;">Burton, Evan</div><div style="font-size:11px;color:#d97706;">3 overdue · audit deadline Jul 20</div></div>
+        </div>
+      </div></div>`);
+  } else if (t.includes('due this week') || t.includes('this week')) {
+    addAIMsg('Here are <strong>workstreams due this week</strong> (Jul 7–14).',
+    `<div class="ai-card"><div class="ai-card-hd">Due This Week</div><table class="c-tbl"><thead><tr><th>Item</th><th>Client</th><th>Due</th><th>Status</th></tr></thead><tbody>
+      <tr><td>Tax Return Filing</td><td>Burton, Ethan</td><td>Jul 5</td><td><span class="tpill tp-r">Review</span></td></tr>
+      <tr><td>Monthly Bookkeeping</td><td>Miller, Sally</td><td>Jul 10</td><td><span class="tpill tp-p">Working</span></td></tr>
+      <tr><td>Board Presentation</td><td>Burton, Evan</td><td>Jul 12</td><td><span class="tpill tp-r">Review</span></td></tr>
+    </tbody></table></div>`);
+  } else if (t.includes('deliverable')) {
+    addAIMsg('Here\'s your <strong>deliverable status report</strong> for this period.',
+    `<div class="ai-card"><div class="ai-card-hd">Deliverable Status Report</div><div class="stat-grid">
+      <div class="stat-box"><div class="stat-val">32</div><div class="stat-lbl">Total Deliverables</div><div class="stat-trend up">On schedule</div></div>
+      <div class="stat-box"><div class="stat-val">6</div><div class="stat-lbl">At Risk</div><div class="stat-trend dn">Needs attention</div></div>
+    </div><table class="c-tbl" style="margin-top:9px;"><thead><tr><th>Category</th><th>Complete</th><th>Pending</th></tr></thead><tbody>
+      <tr><td>Tax Returns</td><td style="color:#16a34a;font-weight:700;">8</td><td>4</td></tr>
+      <tr><td>Audit Reports</td><td style="color:#16a34a;font-weight:700;">3</td><td>2</td></tr>
+      <tr><td>Advisory</td><td style="color:#d97706;font-weight:700;">5</td><td>5</td></tr>
+    </tbody></table></div>`);
+  } else {
+    addAIMsg(`Based on your <strong>Focus → Work Items</strong> view, I can help with:`,
+    `<div class="ai-card"><div style="font-size:12.5px;color:#63666a;line-height:1.65;padding:3px 0;">
+      • <strong>Summaries</strong> — overdue, waiting, or at-risk items<br>
+      • <strong>Reports</strong> — utilization, status, bottleneck analysis<br>
+      • <strong>Client views</strong> — per-client breakdowns and delays<br>
+      • <strong>Filters</strong> — by due date, priority, or assignee
+    </div><div>
+      <button class="c-action-btn" onclick="sendPrompt('Summarize waiting items')">Waiting items</button>
+      <button class="c-action-btn" onclick="sendPrompt('Generate weekly manager summary')">Weekly summary</button>
+      <button class="c-action-btn" onclick="sendPrompt('Show bottlenecks this month')">Bottlenecks</button>
+    </div></div>`);
+  }
+  chatMessages.push({r:'ai'});
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function handleKey(e) {
+  if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+function autoResize(el) { el.style.height=''; el.style.height=Math.min(el.scrollHeight,100)+'px'; }
+
+// ===== INIT =====
+renderTable();
+</script>
+</body>
+</html>
