@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wipflo – Pin work items</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#0A55F0; --blue-600:#0847CC; --blue-50:#EEF3FF; --blue-100:#DCE7FF;
+  --ink:#1B2230; --muted:#667085; --faint:#98A2B3; --line:#E6E9EF; --surface:#F7F8FA; --head:#EEEFF3;
+  --amber:#F5B400; --danger:#E5381E;
+  --font:'Montserrat',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:var(--font);font-size:14px;color:var(--ink);background:#fff;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0}
+svg{display:block;flex:none}
+.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:6px}
+
+/* prototype control bar */
+.pbar{position:fixed;inset:0 0 auto 0;height:48px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:20px;padding:0 16px;z-index:100;font-size:12.5px}
+.pbar b{font-weight:600}
+.pbar .grp{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:2px}
+.seg button{padding:5px 11px;border-radius:6px;color:var(--muted);font-weight:500}
+.seg button.on{background:#fff;color:var(--blue);box-shadow:0 1px 2px rgba(16,24,40,.12);font-weight:600}
+.pbar .reset{margin-left:auto;color:var(--muted);padding:6px 10px;border-radius:8px}
+.pbar .reset:hover{background:var(--surface)}
+
+/* app shell */
+.app{position:fixed;inset:48px 0 0 0;display:flex}
+.side{width:224px;border-right:1px solid var(--line);display:flex;flex-direction:column;padding:16px 12px;background:#fff;flex:none}
+.logo{display:flex;align-items:center;gap:8px;padding:0 6px 16px;font-size:24px;font-weight:700;letter-spacing:-.5px}
+.nav{display:flex;flex-direction:column;gap:2px;flex:1;overflow:auto}
+.nav a{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:10px;color:#3A4352;font-weight:500;text-decoration:none}
+.nav a.on{background:#E8EFFD;color:var(--ink);font-weight:600}
+.nav .badge{margin-left:auto;font-size:12px;font-weight:600;background:#fff;border-radius:10px;padding:1px 8px}
+.feedback{border:1px solid var(--line);background:var(--blue-50);border-radius:10px;text-align:center;padding:14px 10px;font-size:12px;color:var(--muted)}
+.feedback a{display:block;color:var(--blue);font-weight:600;margin-top:6px}
+.me{display:flex;align-items:center;gap:10px;padding:14px 6px 0}
+.me small{display:block;color:var(--muted);font-size:12px}
+.me b{font-weight:600;font-size:13px}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column;padding:20px 24px 0;overflow:hidden}
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.top h1{font-size:22px;font-weight:600;margin:0}
+.tabs2{display:inline-flex;border:1px solid var(--line);border-radius:8px;padding:3px;background:#fff}
+.tabs2 button{padding:6px 14px;border-radius:6px;color:var(--muted);font-weight:500}
+.tabs2 button.on{background:var(--blue-50);color:var(--blue);font-weight:600}
+.tools{margin-left:auto;display:flex;align-items:center;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:8px 14px;background:#fff;color:#3A4352;font-weight:500}
+.btn:hover{background:var(--surface)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+.btn.primary:hover{background:var(--blue-600)}
+.btn.sm{padding:5px 12px;font-size:13px}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:0 12px;height:38px;color:var(--muted)}
+.search input{border:0;outline:0;font:inherit;width:130px;color:var(--ink);background:none}
+.toggle{display:flex;align-items:center;gap:8px;font-weight:500;color:#3A4352}
+.sw{width:42px;height:24px;border-radius:12px;background:#D5D9E0;position:relative}
+.sw::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+
+.qf{display:flex;align-items:center;gap:6px;margin:16px 0 14px;flex-wrap:wrap}
+.qf span.l{color:var(--muted);font-size:13px;font-weight:500;margin-right:8px}
+.qf button{color:var(--blue);padding:7px 14px;border-radius:8px;font-weight:500}
+.qf button:hover{background:var(--blue-50)}
+.qf button.on{background:var(--blue);color:#fff;font-weight:600}
+.qf .pinq{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--blue-100);background:#fff}
+.qf .pinq .n{background:var(--blue-50);border-radius:10px;font-size:12px;font-weight:600;padding:0 7px;line-height:20px}
+.qf .pinq.on{border-color:var(--blue)}
+.qf .pinq.on .n{background:rgba(255,255,255,.25);color:#fff}
+
+.stat{display:flex;border:1px solid var(--line);border-radius:12px;padding:4px;gap:2px;overflow-x:auto;flex:none}
+.stat button{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;padding:9px 12px;border-radius:8px;color:#3A4352;font-weight:500;white-space:nowrap}
+.stat button.on{background:var(--surface);color:var(--ink);font-weight:600}
+.stat .c{min-width:24px;height:24px;border-radius:12px;color:#fff;font-size:12px;font-weight:600;display:grid;place-items:center;padding:0 7px}
+
+.bulk{height:0;overflow:hidden;transition:height .18s ease;flex:none}
+.bulk.show{height:52px}
+.bulk .in{margin-top:10px;display:flex;align-items:center;gap:10px;background:var(--ink);color:#fff;border-radius:10px;padding:8px 8px 8px 16px;font-weight:500}
+.bulk .in .btn{background:transparent;color:#fff;border-color:rgba(255,255,255,.3)}
+.bulk .in .btn:hover{background:rgba(255,255,255,.1)}
+.bulk .in .btn.primary{background:#fff;color:var(--ink);border-color:#fff}
+
+.tw{flex:1;overflow:auto;margin-top:14px;border-top:1px solid var(--line)}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:1280px}
+thead th{position:sticky;top:0;z-index:3;background:var(--head);text-align:left;font-weight:600;padding:0 14px;height:42px;white-space:nowrap;font-size:13.5px;border-right:1px solid #DADCE3}
+thead th:last-child{border-right:0}
+tbody td{padding:0 14px;height:54px;border-bottom:1px solid var(--line);white-space:nowrap;background:#fff}
+td.ck,th.ck{width:44px;padding-right:0}
+td.pn,th.pn{width:40px;padding:0 4px}
+td.fl,th.fl{width:40px;padding:0 4px}
+input[type=checkbox]{appearance:none;width:18px;height:18px;border:1.5px solid #8A93A3;border-radius:4px;background:#fff;display:block;cursor:pointer;margin:0}
+input[type=checkbox]:checked{background:var(--blue);border-color:var(--blue);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-6.5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-size:100%}
+tbody tr:hover td{background:#FAFBFD}
+tr.pinned td{background:var(--blue-50)}
+tr.pinned:hover td{background:#E6EEFF}
+tr.pinned td:first-child{box-shadow:inset 3px 0 0 var(--blue)}
+tr.flash td{animation:flash 1.4s ease-out}
+@keyframes flash{0%{background:#BFD3FF}100%{background:inherit}}
+tr.grp td{height:40px;background:var(--surface)!important;border-bottom:1px solid var(--line);padding:0 14px}
+.grpbtn{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;color:var(--ink);width:100%;height:100%;text-align:left}
+.grpbtn .chev{transition:transform .15s}
+.grpbtn.shut .chev{transform:rotate(-90deg)}
+.grpbtn .cnt{background:var(--blue-50);color:var(--blue);border-radius:10px;padding:0 8px;font-size:12px;line-height:20px}
+.grpbtn .hint{margin-left:6px;color:var(--muted);font-weight:500;font-size:12px}
+tr.empty td{height:160px;text-align:center;color:var(--muted);white-space:normal}
+
+/* the pin button */
+.pinbtn{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--faint);opacity:0;transition:opacity .12s,background .12s,color .12s}
+tr:hover .pinbtn,.pinbtn:focus-visible,.pinbtn.on{opacity:1}
+.pinbtn:hover{background:var(--blue-100);color:var(--blue)}
+.pinbtn.on{color:var(--blue)}
+.pinbtn.on svg{fill:currentColor}
+.pinbtn.on svg{transform:rotate(0)}
+.pinbtn:not(.on) svg{transform:rotate(45deg)}
+@media (hover:none){.pinbtn{opacity:1}}
+
+a.wi{cursor:default;color:var(--ink);text-decoration:none;font-weight:500;cursor:pointer}
+
+a.wl{color:var(--blue);text-decoration:none;font-weight:500;cursor:pointer}
+a.wl:hover{text-decoration:underline}
+.dim{color:var(--faint)}
+.pill{display:inline-block;padding:5px 11px;border-radius:6px;font-weight:500;font-size:13.5px}
+.st{display:inline-flex;align-items:center;gap:7px;font-weight:500}
+.st i{width:7px;height:7px;border-radius:50%;display:block}
+.prog{display:inline-flex;align-items:center;gap:8px;margin-left:12px;color:var(--muted);font-size:12px}
+.prog span{display:block;width:76px;height:5px;border-radius:3px;background:#E8EBF0;position:relative;overflow:hidden}
+.prog span i{position:absolute;inset:0 auto 0 0;border-radius:3px}
+.ppl{display:flex;gap:5px}
+.av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:11.5px;font-weight:700;flex:none;border:1.5px solid}
+.av.o{color:#C2410C;border-color:#E8590C;background:#FFF3EC}
+.av.b{color:#0A55F0;border-color:#0A55F0;background:#EEF3FF}
+.av.g{color:#067A55;border-color:#0E9F6E;background:#E9F8F2}
+.av.d{color:#fff;border-color:#1B2230;background:#1B2230}
+.av.p{color:#7E22CE;border-color:#A855F7;background:#F6EEFF}
+.av.sm{width:26px;height:26px;font-size:10px}
+.note{color:var(--faint)}
+.note.has{color:var(--amber)}
+.note.has svg{fill:#FCD34D}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--ink);color:#fff;border-radius:10px;padding:12px 14px 12px 18px;display:flex;align-items:center;gap:16px;font-weight:500;box-shadow:0 12px 32px rgba(16,24,40,.28);opacity:0;pointer-events:none;transition:.2s;z-index:300;max-width:min(560px,92vw)}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{color:#8CB0FF;font-weight:600}
+
+/* drawer */
+.scrim{position:fixed;inset:48px 0 0 0;background:rgba(27,34,48,.28);opacity:0;pointer-events:none;transition:opacity .2s;z-index:150}
+.scrim.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:48px;right:0;bottom:0;width:min(620px,100vw);background:#fff;box-shadow:-18px 0 40px rgba(16,24,40,.14);transform:translateX(104%);transition:transform .26s cubic-bezier(.2,.7,.2,1);z-index:160;display:flex;flex-direction:column}
+.drawer.show{transform:none}
+.dh{padding:20px 24px 0;border-bottom:1px solid var(--line);flex:none}
+.crumb{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;font-weight:500}
+.crumb b{color:var(--ink);font-weight:500}
+.dh .acts{margin-left:auto;display:flex;gap:4px}
+.ib{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:#4A5465}
+.ib:hover{background:var(--surface)}
+.ib.on{color:var(--blue);background:var(--blue-50)}
+.ib.on svg{fill:currentColor}
+.dh h2{margin:6px 0 14px;font-size:22px;font-weight:600}
+.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 16px;margin-bottom:16px}
+.meta small{display:block;color:var(--muted);font-weight:500;font-size:13px;margin-bottom:4px}
+.meta div>span{font-weight:500;font-size:13.5px;display:flex;align-items:center;gap:6px}
+.dtabs{display:flex;gap:22px;margin-top:2px}
+.dtabs button{padding:10px 0 12px;font-weight:500;color:#3A4352;border-bottom:2px solid transparent}
+.dtabs button.on{color:var(--blue);border-color:var(--blue);font-weight:600}
+.dbody{flex:1;overflow:auto;background:var(--surface);position:relative}
+.dpad{padding:22px 24px 12px}
+.dpad h3{margin:0 0 16px;font-size:20px;font-weight:600;display:flex;align-items:center;gap:10px}
+.cntb{background:#E9ECF2;border-radius:12px;font-size:13px;padding:2px 10px;font-weight:500}
+
+.pstrip{position:sticky;top:0;z-index:5;background:var(--surface);padding:0 24px 14px;margin-top:-4px}
+.pstrip .box{background:#fff;border:1px solid var(--blue-100);border-radius:12px;box-shadow:0 4px 14px rgba(10,85,240,.08);overflow:hidden}
+.pstrip .ph{display:flex;align-items:center;gap:8px;width:100%;padding:11px 14px;font-weight:600;font-size:13.5px;color:var(--blue);background:var(--blue-50);text-align:left}
+.pstrip .ph svg.pin{fill:currentColor}
+.pstrip .ph .chev{margin-left:auto;transition:transform .15s;color:var(--muted)}
+.pstrip .ph.shut .chev{transform:rotate(-90deg)}
+.pstrip .ph .lim{color:var(--muted);font-weight:500;font-size:12px}
+.pitem{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-top:1px solid var(--line);width:100%;text-align:left}
+.pitem:hover{background:#FAFBFD}
+.pitem .t{flex:1;min-width:0}
+.pitem .who{font-size:12px;color:var(--muted);font-weight:500}
+.pitem .tx{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:13.5px;margin-top:2px;line-height:1.45}
+.pitem .go{font-size:12px;color:var(--blue);font-weight:600;margin-top:3px;opacity:0}
+.pitem:hover .go,.pitem:focus-visible .go{opacity:1}
+.pitem .ib{width:28px;height:28px;margin-top:-2px}
+.pnone{padding:14px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)}
+
+.cm{position:relative;display:flex;gap:12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;scroll-margin-top:var(--sm,84px)}
+.cm.mine{background:#fff}
+.cm.hl{background:#F0F5FF;border-color:var(--blue-100)}
+.cm.pinned{border-color:var(--blue-100)}
+.cm.flash{animation:cflash 1.6s ease-out}
+@keyframes cflash{0%,35%{background:#D8E5FF;border-color:var(--blue)}100%{background:#fff}}
+.cmain{flex:1;min-width:0}
+.cmeta{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;font-weight:500}
+.pbadge{display:inline-flex;align-items:center;gap:4px;color:var(--blue);background:var(--blue-50);border-radius:6px;font-size:11.5px;font-weight:600;padding:2px 7px}
+.pbadge svg{fill:currentColor}
+.cbody{margin:4px 0 6px;line-height:1.5;word-wrap:break-word}
+.cbody a{color:var(--blue);font-weight:500;text-decoration:none}
+.cfoot{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;font-weight:500}
+.cfoot button{color:var(--muted);font-weight:500}
+.cfoot button:hover{color:var(--blue)}
+.cact{display:flex;align-items:flex-start;gap:2px;margin:-6px -6px 0 0;position:relative}
+.cact .pinh{opacity:0}
+.cm:hover .pinh,.pinh:focus-visible,.pinh.on{opacity:1}
+.cact .ib{width:30px;height:30px}
+.pinh.on{color:var(--blue)}
+.pinh.on svg{fill:currentColor}
+.menu{position:absolute;top:34px;right:0;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(16,24,40,.16);padding:6px;min-width:190px;z-index:20}
+.menu button{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:8px;font-weight:500;text-align:left}
+.menu button:hover{background:var(--surface)}
+.menu .del{color:var(--danger)}
+.menu .pin svg{color:var(--blue)}
+.edit textarea{width:100%;min-height:64px;border:1px solid var(--blue);border-radius:8px;padding:10px;font:inherit;resize:vertical;outline:0;margin:4px 0 8px}
+.edit .row{display:flex;gap:8px}
+.composer{flex:none;background:#fff;border-top:1px solid var(--line);padding:12px 24px;display:flex;gap:10px;align-items:flex-end}
+.composer textarea{flex:1;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;resize:none;height:44px;outline:0;max-height:120px}
+.composer textarea:focus{border-color:var(--blue)}
+.blank{padding:70px 24px;text-align:center;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:900px){.side{display:none}.pbar{overflow-x:auto}.meta{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<div class="pbar">
+  <b>Pin work items</b>
+  <div class="grp">Variation
+    <div class="seg" id="segLayout">
+      <button data-v="top" class="on">1 · Group on top</button>
+      <button data-v="float">2 · Stay on top</button>
+    </div>
+  </div>
+  <button class="reset" id="reset">Reset demo</button>
+</div>
+
+<div class="app">
+  <aside class="side">
+    <div class="logo">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><g fill="#0A55F0"><circle cx="5" cy="9" r="2"/><circle cx="11" cy="5" r="1.6"/><circle cx="17" cy="9" r="2.4"/><circle cx="25" cy="5" r="1.6"/><circle cx="29" cy="12" r="2"/><circle cx="8" cy="16" r="2.4"/><circle cx="15" cy="19" r="1.6"/><circle cx="23" cy="17" r="2.4"/><circle cx="5" cy="24" r="1.6"/><circle cx="12" cy="28" r="2.2"/><circle cx="20" cy="26" r="1.6"/><circle cx="28" cy="25" r="2.4"/></g></svg>Wipflo
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="feedback">Have improvement feedback?<a href="#">Share Idea</a></div>
+    <div class="me"><div class="av o sm" style="border-color:#BFE3EE;color:#0B7A99;background:#E8F6FA">MN</div><div><b>Mehraniya, Neeraj</b><small>Tax Associate</small></div></div>
+  </aside>
+
+  <main class="main">
+    <div class="top">
+      <h1>Focus</h1>
+      <div class="tabs2" id="viewTabs">
+        <button data-v="wi" class="on">Work Item</button>
+      </div>
+      <div class="tools">
+        <div class="toggle"><div class="sw"></div>Active Only</div>
+        <label class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" placeholder="Search" aria-label="Search"></label>
+        <button class="btn"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M7 12h10M10 17h4"/></svg>Filters</button>
+        <button class="btn"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>Customize</button>
+      </div>
+    </div>
+
+    <div class="qf" id="qf"></div>
+    <div class="stat" id="stat"></div>
+    <div class="bulk" id="bulk"><div class="in"><span id="bulkN"></span><span style="flex:1"></span>
+      <button class="btn sm primary" id="bulkPin">Pin selected</button>
+      <button class="btn sm" id="bulkUnpin">Unpin selected</button>
+      <button class="btn sm" id="bulkClear">Clear</button></div></div>
+    <div class="tw"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button id="toastUndo">Undo</button></div>
+
+<script>
+/* ---------- icons ---------- */
+const P = {
+  pin:'<path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>',
+  chev:'<path d="M6 9l6 6 6-6"/>',
+  more:'<circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  note:'<path d="M5 4h14v11l-5 5H5z"/><path d="M14 20v-5h5"/>',
+  alarm:'<circle cx="12" cy="13" r="7"/><path d="M12 9v4l2.5 1.5M4 5l3-2M20 5l-3-2"/>',
+  hour:'<path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/>',
+  warn:'<path d="M12 4l10 17H2z"/><path d="M12 10v5M12 18v.5"/>',
+  x:'<path d="M6 6l12 12M18 6L6 18"/>'
+};
+const ic = (n,cls='i',extra='') => `<svg class="${cls}" viewBox="0 0 24 24" ${extra}>${P[n]}</svg>`;
+const NAV = [
+ ['Focus','<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/>',10],
+ ['Dashboard','<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'],
+ ['Activity','<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"/>'],
+ ['Marketplace','<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>'],
+ ['Overpass','<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'],
+ ['Clients','<path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z"/>'],
+ ['Engagements','<path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'],
+ ['My Squads','<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 3-6 6-6s6 2.5 6 6M15 14.5c3 0 6 2 6 5.5"/>',4],
+ ['Team Workload','<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 3-6 6-6s6 2.5 6 6M15 14.5c3 0 6 2 6 5.5"/>'],
+ ['Reports','<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7"/>'],
+ ['Tasks','<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 11h6M9 15h6"/>'],
+ ['Chats','<path d="M4 5h16v11H9l-5 4z"/>']
+];
+document.getElementById('nav').innerHTML = NAV.map(([n,p,b],i)=>`<a href="#" class="${i===0?'on':''}"><svg class="i" viewBox="0 0 24 24">${p}</svg>${n}${b?`<span class="badge" ${n==='My Squads'?'style="background:#FFF6D6;color:#8A6500;border:1px dashed #E4B100"':''}>${b}</span>`:''}</a>`).join('');
+
+/* ---------- data ---------- */
+const STATUS_COLOR = {'Rework':'#8B3A0F','Snooze':'#F4511E','Working':'#00B0FF','Waiting':'#F5B400','Waiting on External':'#F5B400','To Review':'#9C27B0','Not Started':'#9AA0A6','Hold':'#E5381E'};
+const PHASE = {Discovery:['#E8F0FE','#3B6FD4'],Pilot:['#FDEBE3','#D9531E'],Validation:['#FFF6D6','#B58900'],Qualification:['#F3E3DB','#A5522A']};
+const WI = [
+ {id:'w1',name:'Get all the previous tax documents',role:'Assignee',client:'[On Hold] Burton, Evan',ws:'Schedule ceremony site tours',phase:'Discovery',days:'0d 03:45',ppl:[['MN','o']],status:'Rework',note:0,due:'06/22/2026'},
+ {id:'w2',name:'Previous "And" future date',flag:'alarm',role:'Assignee',client:'[Prospect] Miller, Sally and Edward',ws:'Research officiants',phase:'Discovery',days:'3d 00:34',ppl:[['MN','o'],['JD','p']],status:'Snooze',note:1,due:'05/22/2026'},
+ {id:'w3',name:'Associate Training Plan',role:'Assignee',client:'[Inactive] John, Smith',inactive:1,ws:'Write a sweet note to your partner',phase:'Pilot',days:'2d 01:24',ppl:[['MN','o'],['CJ','b'],['··','g']],status:'Working',note:0,due:'07/22/2026'},
+ {id:'w4',name:'Previous year tax documents',flag:'hour',role:'Assignee',client:'Fritz, Yareli',ws:'Schedule ceremony site tours',phase:'',days:'',ppl:[['MN','o']],status:'Waiting on External',note:0,due:'06/18/2026'},
+ {id:'w5',name:'Organizational Performance',flag:'warn',role:'Assignee',client:'[On Hold] Burton, Evan',ws:'1060 Tax Return',phase:'Validation',days:'2d 01:24',ppl:[['MN','o'],['RK','p'],['TS','d']],status:'Working',note:0,due:'09/18/2026'},
+ {id:'w6',name:'Health Care Consulting',role:'',client:'Samson, Kyle and Allison',ws:'Create your wedding website',phase:'Validation',days:'3d 19:09',ppl:[['MN','o'],['··','g'],['AP','g']],status:'Waiting',note:1,due:'05/16/2026'},
+ {id:'w7',name:'Human Capital Management',role:'Reviewer 1',client:'[Prospect] Miller, Sally and Edward',ws:'Meet with officiants',phase:'',days:'6d 01:02',ppl:[['AC','o'],['MN','b']],status:'To Review',note:0,due:'07/15/2026'},
+ {id:'w8',name:'Intellectual Properties Sales & Develo…',flag:'warn',role:'Reviewer 1',client:'Samson, Kyle and Allison',ws:'1060 Tax Return',phase:'Qualification',days:'2d 01:24',ppl:[['AC','o'],['MN','b'],['LM','d']],status:'Snooze',note:1,due:'04/15/2026'},
+ {id:'w9',name:'Prepare the documentation',role:'Assignee',client:'Fritz, Yareli',ws:'Schedule ceremony site tours',phase:'',days:'',ppl:[['MN','o']],status:'Not Started',note:0,due:'06/18/2026'},
+ {id:'w10',name:'Risk Advisory Services',role:'Reviewer 2',client:'[On Hold] Burton, Evan',ws:'Meet with cake bakers',phase:'Qualification',days:'12d 01:09',ppl:[['AC','o'],['SP','p'],['MN','g']],status:'To Review',note:0,due:'07/14/2026'}
+];
+const WS = [
+ ['s1','Burton, Ethan','Waiting',0,'Mobility','02/08/2025'],['s2','Miller, Sally and Edward','Waiting',0,'L2 Escalation','02/12/2025'],
+ ['s3','Burton, Rebecca','Not Started',0,'Technical','02/15/2025'],['s4','Smith, John','Working',15,'Portability','02/08/2025'],
+ ['s5','Burton, Evan','Working',15,'Portability','02/20/2025'],['s6','Samson, Kyle and Allison','Hold',35,'After Sales','03/01/2025'],
+ ['s7','Miller, Sally and Edward','Rework',0,'L2 Escalation','02/25/2025'],['s8','Samson, Kyle and Allison','Rework',0,'Customer Care','03/05/2025'],
+ ['s9','Fritz, Yareli','Waiting',0,'After Sales','03/10/2025'],['s10','Burton, Evan','To Review',35,'L3 Escalation','03/12/2025']
+].map(([id,client,status,pct,dept,due])=>({id,name:'1040 Tax Return',client,ws:'1040 Tax Return',status,pct,dept,due}));
+
+const VIEWS = {
+  wi:{label:'work item',rows:WI,tabs:['Waiting','Not Started','Working','To Review','Rework','Snooze','Waiting on External'],
+    cols:[['Work Item Name',r=>`<a class="wi">${r.name}</a>`],
+          ['Active Role',r=>r.role||'<span class="dim">--</span>'],
+          ['Client Name',r=>`<span class="${r.inactive?'dim':''}">${r.client}</span>`],
+          ['Workstream Name',r=>r.ws],
+          ['Phase',r=>r.phase?`<span class="pill" style="background:${PHASE[r.phase][0]};color:${PHASE[r.phase][1]}">${r.phase}</span>`:'--'],
+          ['Actual Days',r=>r.days||'--'],
+          ['People',r=>`<div class="ppl">${r.ppl.map(p=>`<span class="av ${p[1]}">${p[0]}</span>`).join('')}</div>`],
+          ['WI Status',r=>`<span class="st"><i style="background:${STATUS_COLOR[r.status]}"></i>${r.status}</span>`],
+          ['Status Note',r=>`<span class="note ${r.note?'has':''}">${ic('note')}</span>`],
+          ['WI Due Date',r=>r.due]]},
+  ws:{label:'workstream',rows:WS,tabs:['Waiting','Not Started','Working','Hold','Rework','To Review'],
+    cols:[['Workstream Name',r=>`<a class="wl" data-open="${r.id}" tabindex="0">${r.name}</a>`],
+          ['Client Name',r=>r.client],
+          ['Status',r=>`<span class="st"><i style="background:${STATUS_COLOR[r.status]}"></i>${r.status}</span><span class="prog"><span><i style="width:${r.pct}%;background:${STATUS_COLOR[r.status]}"></i></span>${r.pct}%</span>`],
+          ['Department',r=>r.dept],['Target Due Date',r=>r.due]]}
+};
+const LIMIT = {wi:5, ws:5}, C_LIMIT = 3;
+
+const seedComments = () => [
+ {id:'c1',by:'Kansal, Ridhima',ini:'KR',cls:'p',at:'05/10/2024 08:09 PM',html:'<a>Mehraniya, Neeraj</a> This is a reply note to your note. How’s it?',mine:false,likes:0},
+ {id:'c2',by:'Patel, Arjun',ini:'PA',cls:'g',at:'05/09/2024 10:20 AM',html:'Client confirmed the 2023 K-1 is final. Please use the revised figures before Friday’s review — the earlier draft numbers are out of date.',mine:false,likes:3,pinned:{by:'Kansal, Ridhima',ts:1}},
+ {id:'c3',by:'Mehraniya, Neeraj',ini:'MN',cls:'b',at:'05/08/2024 01:45 PM',html:'This is a testing note here for you.',mine:true,likes:2},
+ {id:'c4',by:'Fritz, Yareli',ini:'FY',cls:'o',at:'05/07/2024 03:05 PM',html:'Extension is filed. Form 8879 signature is still pending from John — chase on Monday.',mine:false,likes:0},
+ {id:'c5',by:'Mehraniya, Neeraj',ini:'MN',cls:'b',at:'05/06/2024 11:12 AM',html:'Moved the prior-year carryover schedule to the Documents tab.',mine:true,likes:1}
+];
+
+/* ---------- state ---------- */
+const initState = () => ({view:'wi',layout:'top',screen:'list',filter:'all',onlyPinned:false,q:'',sel:new Set(),
+  pins:{wi:['w5'],ws:[]},shut:false,drawerRow:null,dtab:'Comments',menu:null,editing:null,stripShut:false,
+  comments:seedComments()});
+let S = initState();
+const $ = s => document.querySelector(s);
+const esc = s => s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rowOf = (view,id) => VIEWS[view].rows.find(r=>r.id===id);
+
+/* ---------- toast ---------- */
+let toastT, undoFn=null;
+function toast(msg, undo){
+  $('#toastMsg').textContent = msg; undoFn = undo||null;
+  $('#toastUndo').style.display = undo ? '' : 'none';
+  $('#toast').classList.add('show'); clearTimeout(toastT);
+  toastT = setTimeout(()=>$('#toast').classList.remove('show'), 4200);
+}
+$('#toastUndo').onclick = () => { if(undoFn) undoFn(); $('#toast').classList.remove('show'); };
+
+/* ---------- list rendering ---------- */
+function visibleRows(){
+  const v = VIEWS[S.view], pins = S.pins[S.view];
+  let r = v.rows.filter(x => S.filter==='all' || x.status===S.filter);
+  if(S.onlyPinned) r = r.filter(x=>pins.includes(x.id));
+  if(S.q){ const q=S.q.toLowerCase(); r = r.filter(x=>Object.values(x).join(' ').toLowerCase().includes(q)); }
+  return r;
+}
+function rowHtml(r){
+  const v = VIEWS[S.view], on = S.pins[S.view].includes(r.id);
+  const flag = S.view==='wi' ? `<td class="fl">${r.flag?`<span style="color:${r.flag==='warn'?'#E5381E':r.flag==='hour'?'#F5A000':'#F4511E'}">${ic(r.flag)}</span>`:''}</td>` : '';
+  return `<tr class="${on?'pinned':''} ${S.flash===r.id?'flash':''}" data-id="${r.id}">
+    <td class="ck"><input type="checkbox" data-sel="${r.id}" ${S.sel.has(r.id)?'checked':''} aria-label="Select ${esc(r.name)}"></td>
+    <td class="pn"><button class="pinbtn ${on?'on':''}" data-pin="${r.id}" aria-pressed="${on}" aria-label="${on?'Unpin':'Pin'} ${esc(r.name)}" title="${on?'Unpin':'Pin to top'}">${ic('pin','i','style="width:17px;height:17px"')}</button></td>
+    ${flag}${v.cols.map(c=>`<td>${c[1](r)}</td>`).join('')}</tr>`;
+}
+function renderList(){
+  const v = VIEWS[S.view], pins = S.pins[S.view], rows = visibleRows();
+  const span = v.cols.length + (S.view==='wi'?3:2);
+
+  // nav badge
+  // quick filters
+  $('#qf').innerHTML = `<span class="l">Quick Filters:</span>
+    <button class="pinq ${S.onlyPinned?'on':''}" id="qPinned" aria-pressed="${S.onlyPinned}"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px;${pins.length?'fill:currentColor':''}">${P.pin}</svg>Pinned <span class="n">${pins.length}</span></button>
+    <button>Following</button><button class="on">Workstream</button><button>Assigned to me</button><button>Filter 234</button><button>Filter everything</button><button>Quick Filter Demo</button><button>…Show more</button>`;
+
+  // status tabs
+  const all = v.rows.length;
+  $('#stat').innerHTML = `<button data-f="all" class="${S.filter==='all'?'on':''}">Total Records <span class="c" style="background:#0A55F0">${all}</span></button>` +
+    v.tabs.map(t=>{const n=v.rows.filter(r=>r.status===t).length;return `<button data-f="${t}" class="${S.filter===t?'on':''}">${t} <span class="c" style="background:${STATUS_COLOR[t]}">${n}</span></button>`}).join('');
+
+  // head
+  $('#thead').innerHTML = `<tr><th class="ck"><input type="checkbox" id="selAll" aria-label="Select all" ${rows.length&&rows.every(r=>S.sel.has(r.id))?'checked':''}></th><th class="pn" title="Pin"><span class="dim" style="display:grid;place-items:center">${ic('pin','i','style="width:16px;height:16px"')}</span></th>${S.view==='wi'?'<th class="fl"></th>':''}${v.cols.map(c=>`<th>${c[0]}</th>`).join('')}</tr>`;
+
+  // body
+  let html = '';
+  if(!rows.length){
+    html = `<tr class="empty"><td colspan="${span}">${S.onlyPinned?`No pinned ${v.label}s match. Hover a row and select the pin icon to keep it at hand.`:'No records match these filters.'}</td></tr>`;
+  } else if(S.layout==='top'){
+    const pr = pins.map(id=>rows.find(r=>r.id===id)).filter(Boolean);
+    const rest = rows.filter(r=>!pins.includes(r.id));
+    if(pr.length){
+      html += `<tr class="grp"><td colspan="${span}"><button class="grpbtn ${S.shut?'shut':''}" id="grpToggle" aria-expanded="${!S.shut}"><span class="chev">${ic('chev','i','style="width:16px;height:16px"')}</span>Pinned <span class="cnt">${pins.length} of ${LIMIT[S.view]}</span><span class="hint">Only you can see your pins</span></button></td></tr>`;
+      if(!S.shut) html += pr.map(rowHtml).join('');
+      if(rest.length) html += `<tr class="grp"><td colspan="${span}"><div class="grpbtn" style="cursor:default">All ${v.label}s</div></td></tr>`;
+    }
+    html += rest.map(rowHtml).join('');
+  } else {
+    const pr = pins.map(id=>rows.find(r=>r.id===id)).filter(Boolean);
+    html = pr.concat(rows.filter(r=>!pins.includes(r.id))).map(rowHtml).join('');
+  }
+  $('#tbody').innerHTML = html;
+  S.flash = null;
+
+  // bulk bar
+  const n = S.sel.size;
+  $('#bulk').classList.toggle('show', n>0);
+  $('#bulkN').textContent = `${n} selected`;
+  $('#viewTabs').querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.v===S.view));
+}
+
+/* ---------- pin logic (list) ---------- */
+function snapshot(){ return JSON.stringify(S.pins); }
+function restore(s){ S.pins = JSON.parse(s); renderList();  }
+function togglePin(id, force){
+  const view = S.view, pins = S.pins[view], r = rowOf(view,id), snap = snapshot(), has = pins.includes(id);
+  if(has && force!=='pin'){ pins.splice(pins.indexOf(id),1); toast(`Unpinned “${r.name}”`, ()=>restore(snap)); }
+  else if(!has){
+    if(pins.length>=LIMIT[view]){ toast(`You can pin up to ${LIMIT[view]} ${VIEWS[view].label}s. Unpin one to add another.`); return false; }
+    pins.unshift(id); S.flash = id; toast(`Pinned “${r.name}”`, ()=>restore(snap));
+  }
+  renderList(); 
+  return true;
+}
+$('#tbody').addEventListener('click', e=>{
+  const pb = e.target.closest('[data-pin]'); if(pb){ togglePin(pb.dataset.pin); return; }
+  if(e.target.closest('#grpToggle')){ S.shut=!S.shut; renderList(); }
+});
+$('#tbody').addEventListener('change', e=>{
+  const c = e.target.closest('[data-sel]'); if(!c) return;
+  c.checked ? S.sel.add(c.dataset.sel) : S.sel.delete(c.dataset.sel); renderList();
+});
+$('#thead').addEventListener('change', e=>{
+  if(e.target.id!=='selAll') return;
+  const rows = visibleRows(); rows.forEach(r=> e.target.checked ? S.sel.add(r.id) : S.sel.delete(r.id)); renderList();
+});
+$('#stat').addEventListener('click', e=>{ const b=e.target.closest('[data-f]'); if(!b) return; S.filter=b.dataset.f; renderList(); });
+$('#qf').addEventListener('click', e=>{ if(e.target.closest('#qPinned')){ S.onlyPinned=!S.onlyPinned; renderList(); } });
+$('#q').addEventListener('input', e=>{ S.q=e.target.value; renderList(); });
+$('#viewTabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; S.view=b.dataset.v; S.filter='all'; S.sel.clear(); S.onlyPinned=false; renderList(); });
+$('#bulkClear').onclick = () => { S.sel.clear(); renderList(); };
+$('#bulkPin').onclick = () => {
+  const snap=snapshot(), view=S.view, pins=S.pins[view]; let added=0, blocked=0;
+  [...S.sel].forEach(id=>{ if(pins.includes(id)) return; if(pins.length>=LIMIT[view]){blocked++;return;} pins.unshift(id); added++; });
+  S.sel.clear(); renderList();
+  toast(blocked ? `Pinned ${added}. Limit of ${LIMIT[view]} reached — ${blocked} not pinned.` : `Pinned ${added} ${VIEWS[view].label}${added===1?'':'s'}`, added?()=>restore(snap):null);
+};
+$('#bulkUnpin').onclick = () => {
+  const snap=snapshot(), view=S.view; let n=0;
+  S.pins[view] = S.pins[view].filter(id=>{ if(S.sel.has(id)){n++;return false;} return true; });
+  S.sel.clear(); renderList(); toast(n?`Unpinned ${n} ${VIEWS[view].label}${n===1?'':'s'}`:'None of the selected items were pinned', n?()=>restore(snap):null);
+};
+
+/* ---------- prototype bar ---------- */
+function setSeg(sel,v){ document.querySelectorAll(sel+' button').forEach(b=>b.classList.toggle('on',b.dataset.v===v)); }
+$('#segLayout').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; S.layout=b.dataset.v; setSeg('#segLayout',S.layout); renderList(); });
+$('#reset').onclick = () => { S = initState(); $('#q').value=''; setSeg('#segLayout','top'); renderList(); toast('Demo reset'); };
+
+renderList();
+</script>
+</body>
+</html>
